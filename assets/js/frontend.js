@@ -36,10 +36,44 @@
 		return id ? document.getElementById( id ) : null;
 	}
 
+	/**
+	 * Copy the quote and photo into a dialog the first time it opens.
+	 *
+	 * Both are omitted from the server-rendered dialog so the complete review text and the
+	 * image each appear in the HTML exactly once rather than twice. Populating lazily keeps
+	 * the initial payload down on pages with many testimonials.
+	 */
+	function populateDialog( card, dialog ) {
+		if ( dialog.getAttribute( 'data-sct-filled' ) ) {
+			return;
+		}
+
+		dialog.setAttribute( 'data-sct-filled', '1' );
+
+		var quoteTarget = dialog.querySelector( '[data-sct-dialog-quote]' );
+		var quoteSource = card.querySelector( '[data-sct-quote]' );
+
+		if ( quoteTarget && quoteSource ) {
+			quoteTarget.textContent = quoteSource.textContent;
+		}
+
+		var mediaTarget = dialog.querySelector( '[data-sct-dialog-media]' );
+		var mediaSource = card.querySelector( '[data-sct-media] img' );
+
+		if ( mediaTarget && mediaSource ) {
+			var image = mediaSource.cloneNode( true );
+
+			// The card lazily loads its photo; inside a modal it is the focal element.
+			image.removeAttribute( 'loading' );
+			mediaTarget.appendChild( image );
+		}
+	}
+
 	function openDialog( card ) {
 		var dialog = dialogFor( card );
 
 		if ( dialog && typeof dialog.showModal === 'function' && ! dialog.open ) {
+			populateDialog( card, dialog );
 			dialog.showModal();
 		}
 	}

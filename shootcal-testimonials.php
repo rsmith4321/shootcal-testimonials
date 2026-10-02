@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       ShootCal Testimonials
  * Description:       A simple testimonials library with automatic SEO output, native WordPress storage, and optional review structured data.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            ShootCal
@@ -20,7 +20,7 @@ namespace ShootCalTestimonials;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION    = '0.1.0';
+const VERSION    = '0.2.0';
 const SLUG       = 'shootcal-testimonials';
 const OPTION_KEY = 'shootcal_testimonials_options';
 
@@ -64,8 +64,11 @@ function bootstrap(): void {
 	( new Meta() )->register();
 	( new Assets() )->register();
 	( new Shortcode() )->register();
+	( new Form() )->register();
+	( new Block() )->register();
 	( new Schema() )->register();
 	( new Settings() )->register();
+	( new Compatibility() )->register();
 }
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\bootstrap' );
 

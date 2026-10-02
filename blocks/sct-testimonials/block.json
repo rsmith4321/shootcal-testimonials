@@ -1,0 +1,77 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "shootcal/testimonials",
+	"version": "0.2.0",
+	"title": "Testimonials",
+	"category": "widgets",
+	"icon": "format-quote",
+	"description": "Show client testimonials from the ShootCal Testimonials library, optionally filtered by one or more categories.",
+	"keywords": [ "testimonials", "reviews", "quotes", "clients" ],
+	"textdomain": "shootcal-testimonials",
+	"attributes": {
+		"category": {
+			"type": "string",
+			"default": ""
+		},
+		"allowQuery": {
+			"type": "boolean",
+			"default": false
+		},
+		"count": {
+			"type": "integer"
+		},
+		"total": {
+			"type": "integer"
+		},
+		"columns": {
+			"type": "integer"
+		},
+		"more": {
+			"type": "string",
+			"enum": [ "show", "hide" ]
+		},
+		"orderby": {
+			"type": "string",
+			"enum": [ "date", "rating" ],
+			"default": "date"
+		},
+		"order": {
+			"type": "string",
+			"enum": [ "ASC", "DESC" ],
+			"default": "DESC"
+		},
+		"heading": {
+			"type": "string",
+			"default": ""
+		},
+		"eyebrow": {
+			"type": "string",
+			"default": ""
+		},
+		"intro": {
+			"type": "string",
+			"default": ""
+		},
+		"lines": {
+			"type": "integer",
+			"default": 5
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"anchor": true,
+		"spacing": {
+			"margin": true,
+			"padding": true
+		},
+		"color": {
+			"background": true,
+			"text": true
+		}
+	},
+	"editorScript": "shootcal-testimonials-block-editor",
+	"editorStyle": [ "file:../../assets/css/frontend.css", "file:./editor.css" ],
+	"render": "file:./render.php"
+}

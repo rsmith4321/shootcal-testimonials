@@ -1,0 +1,244 @@
+{
+  "generated_at": "2026-10-02T04:06:28Z",
+  "site": "https://www.ryansmithphotography.com",
+  "scope": "All 242 legacy Testimonials Showcase (ttshowcase) records, read-only audit. No legacy post, meta, term or media was modified.",
+  "lookup_policy": {
+    "matched": "The review was located on the stated third-party platform and its identity confirmed against the stored record.",
+    "not-found": "A lookup was performed and no matching third-party review exists. For a record whose sct_source is direct this means no third-party platform record exists at all, because the testimonial was collected directly.",
+    "blocked": "A lookup was attempted and the platform refused the request or returned no readable content, so the outcome is unknown and is never guessed."
+  },
+  "source_rules": {
+    "google": "sct_source is google only where the legacy record stores _rsp_google_review_id. That key is written by the Google Business Profile capture workflow rather than by an editor typing a platform name, so it is first-party evidence. Two records qualify: 88416 and 88417.",
+    "direct": "Every other legacy record stores no third-party platform identifier of any kind. sct_source is direct, which renders no third-party attribution instead of claiming a platform that cannot be evidenced.",
+    "rejected_evidence": "Platform words appearing inside quote text or inside the legacy _aditional_info_url client-link field were reviewed one by one and rejected as source evidence. In every case the sentence describes how the client found the photographer, or is a link to the client's own post, not a statement of where the client published the review. Counting those as source would be guessing."
+  },
+  "platforms": [
+    {
+      "platform": "google",
+      "records_sourced": 2,
+      "profile_urls_from_site_content": [
+        "https://www.google.com/maps/place/Ryan+Smith+Photography/@33.71785,-78.9994927,17z/data=!4m7!3m6!1s0x89006b172c4cc2c9:0x383903bcfc21d28b!8m2!3d33.7178375!4d-78.9972958!9m1!1b1"
+      ],
+      "lookup_result": "matched",
+      "reason": "Confirmed through Ryan's own signed-in Google account in Chrome. Both reviewer contributor pages list a review of Ryan Smith Photography at 151 Empyrean Cir, Myrtle Beach, SC 29588 whose visible text is a character-for-character prefix of the quote stored on the legacy record.",
+      "evidence": [
+        "Signed-in session, https://www.google.com/maps/contrib/110067136242588282743/reviews shows reviewer Jessica Fram, Local Guide Level 4, 16 reviews, including Ryan Smith Photography, 151 Empyrean Cir, Myrtle Beach, SC 29588, posted a week ago",
+        "Google visible text for that review: We met Ryan at the Bridal Expo and fell in love with his photos! He did not disappoint the day of our wedding. He gave me the option to send photos that I wanted to replicate. He also had great ideas for around the venue, as well as on the ... which is a verbatim prefix of the quote stored on legacy record 88416; Google truncates the remainder behind a More control",
+        "Signed-in session, https://www.google.com/maps/contrib/111381239245316784506/reviews shows reviewer Emily Kauff, Local Guide Level 2, 2 reviews and 3 ratings, including Ryan Smith Photography, 151 Empyrean Cir, Myrtle Beach, SC 29588, posted 11 hours ago",
+        "Google visible text for that review: I absolutely love how our family picture turned out, Ryan was very outgoing and easy to work with, also very understanding that 2 3year olds and a ornery 7 year old were not really interested in taking pictures as much as the teenager girls ... which is a verbatim prefix of the quote stored on legacy record 88417",
+        "Distinctive phrase needles confirmed present in the signed-in page text: Bridal Expo, He did not disappoint, ornery, family picture. The phrases sneak peak and random questions were absent only because they fall after Google's More truncation, not because the text differs",
+        "Confirmation timestamp 2026-10-02T04:06:28Z, performed in Ryan's own signed-in Chrome profile",
+        "Anonymous HTTP attempts against the same seven Google endpoints at 2026-10-02T03:54:51Z returned 404s or JavaScript shells with anti-bot markers and zero needle hits, which is why a signed-in browser was required"
+      ],
+      "note": "sct_source is google because both legacy records store _rsp_google_review_id together with a Maps contributor profile URL. sct_source_lookup is matched because the signed-in confirmation located both reviews on Google and matched their visible text verbatim."
+    },
+    {
+      "platform": "direct",
+      "records_sourced": 240,
+      "lookup_result": "not-found",
+      "reason": "No third-party platform identifier is stored on these records, so there is no external record to reconcile against. not-found states that plainly rather than implying a platform was searched and came up empty by accident.",
+      "evidence": [
+        "Field probe over all 242 records: _rsp_google_review_id present on 2, _rsp_google_reviewer_profile present on 2, _rsp_review_date_provenance present on 2, _aditional_info_custom_url present on 0",
+        "_aditional_info_url is populated on 52 records; 50 of those resolve to host ryansmithphotography.com, which is a client or business link and not a review source URL",
+        "Survey receipt /tmp/sct-survey.json produced by tools/survey-legacy.php, read-only"
+      ]
+    },
+    {
+      "platform": "weddingwire",
+      "records_sourced": 0,
+      "profile_urls_from_site_content": [
+        "https://www.weddingwire.com/reviews/ryan-smith-photography-myrtle-beach/1d69d8a8f173ec3f.html",
+        "https://www.weddingwire.com/biz/ryan-smith-photography-myrtle-beach/1d69d8a8f173ec3f.html"
+      ],
+      "lookup_result": "blocked",
+      "reason": "WeddingWire refuses anonymous requests outright.",
+      "evidence": [
+        "HTTP 403 with page title Access Denied using a curl user agent, 464 bytes",
+        "HTTP 403 with page title Access Denied using a Chrome 139 user agent, 464 bytes",
+        "Probe timestamp 2026-10-02T03:52:04Z, receipt 2026-10-01-platform-reachability.txt",
+        "The 403 was re-tested live for this run and is current, not carried over from an earlier observation"
+      ]
+    },
+    {
+      "platform": "theknot",
+      "records_sourced": 0,
+      "profile_urls_from_site_content": [
+        "https://www.theknot.com/marketplace/ryan-smith-photography-myrtle-beach-sc-521207"
+      ],
+      "lookup_result": "blocked",
+      "reason": "The Knot refuses anonymous requests outright.",
+      "evidence": [
+        "HTTP 403 with page title Access Denied using a Chrome 139 user agent, 452 bytes",
+        "The curl user agent attempt failed at the transport layer with status 000 before the 403 was observed",
+        "Probe timestamp 2026-10-02T03:52:04Z, receipt 2026-10-01-platform-reachability.txt"
+      ]
+    },
+    {
+      "platform": "zola",
+      "records_sourced": 0,
+      "profile_urls_from_site_content": [
+        "https://www.zola.com/inspire/public-recommendations/2346e9b7-ea73-450b-ab99-18126d444377"
+      ],
+      "lookup_result": "not-found",
+      "reason": "The recommendations page is reachable anonymously and returns HTTP 200, but no legacy record is sourced to Zola, so there is nothing to reconcile.",
+      "evidence": [
+        "HTTP 200, 18783 bytes, no anti-bot markers, identical with both user agents",
+        "Probe timestamp 2026-10-02T03:52:04Z"
+      ]
+    },
+    {
+      "platform": "facebook",
+      "records_sourced": 0,
+      "profile_urls_from_site_content": [
+        "https://www.facebook.com/RyanSmithPhotographyofMyrtleBeach/reviews"
+      ],
+      "lookup_result": "blocked",
+      "reason": "Facebook review content is not readable by an anonymous client. It answers a bare curl user agent with a large HTML shell and answers a browser user agent with HTTP 400, so no review text can be confirmed either way.",
+      "evidence": [
+        "HTTP 200, 491051 bytes, page title Ryan Smith Photography, with anti-bot markers, using a curl user agent",
+        "HTTP 400, 1542 bytes, page title Error, using a Chrome 139 user agent",
+        "Probe timestamp 2026-10-02T03:52:04Z"
+      ]
+    },
+    {
+      "platform": "instagram",
+      "records_sourced": 0,
+      "profile_urls_from_site_content": [
+        "https://www.instagram.com/ryan_smith_photography/"
+      ],
+      "lookup_result": "blocked",
+      "reason": "Instagram is not a review platform and its profile is login-walled, so it cannot corroborate a testimonial.",
+      "evidence": [
+        "HTTP 200, 743735 bytes, with anti-bot markers; the Chrome user agent variant returned HTTP 200 with page title Instagram only",
+        "Probe timestamp 2026-10-02T03:52:04Z"
+      ]
+    }
+  ],
+  "record_overrides": {
+    "88416": {
+      "legacy_id": 88416,
+      "name": "Jessica Fram",
+      "legacy_date": "2026-09-25 12:00:00",
+      "source": "google",
+      "lookup": "matched",
+      "note": "Google review id and Maps contributor profile are stored on the legacy record, and the review was confirmed on Google in a signed-in browser session on 2026-10-02. Reviewer Jessica Fram, business Ryan Smith Photography at 151 Empyrean Cir, Myrtle Beach, posted a week before confirmation, visible text a verbatim prefix of the stored quote.",
+      "evidence": [
+        "_rsp_google_review_id=Ci9DQUlRQUNvZENodHljRjlvT25KdU5taElTSEV3VkRjMk9YZFJXVTlVY2w5elMzYxAB",
+        "_rsp_google_reviewer_profile=https://www.google.com/maps/contrib/110067136242588282743/reviews",
+        "_rsp_review_date_provenance=Date from Google Business Profile notification received September 25, 2026; noon is a display placeholder, not exact review creation time.",
+        "_aditional_info_rating=5",
+        "ttshowcase_groups term 559 wedding-photography",
+        "Signed-in Google Maps contributor page confirmation, 2026-10-02T04:06:28Z"
+      ]
+    },
+    "88417": {
+      "legacy_id": 88417,
+      "name": "Emily Kauff",
+      "legacy_date": "2026-10-01 12:00:00",
+      "source": "google",
+      "lookup": "matched",
+      "note": "Google review id and Maps contributor profile are stored on the legacy record, and the review was confirmed on Google in a signed-in browser session on 2026-10-02. Reviewer Emily Kauff, business Ryan Smith Photography at 151 Empyrean Cir, Myrtle Beach, posted 11 hours before confirmation, visible text a verbatim prefix of the stored quote.",
+      "evidence": [
+        "_rsp_google_review_id=Ci9DQUlRQUNvZENodHljRjlvT21Jd05HTktNMEp3WW5aVFJWODJaVlYyY3kxaFdsRRAB",
+        "_rsp_google_reviewer_profile=https://www.google.com/maps/contrib/111381239245316784506/reviews",
+        "_rsp_review_date_provenance=Date corroborated by Google Business Profile notification October 1, 2026; noon is a display placeholder, not exact review creation time.",
+        "_aditional_info_rating=5",
+        "ttshowcase_groups term 557 family-pictures",
+        "Signed-in Google Maps contributor page confirmation, 2026-10-02T04:06:28Z"
+      ]
+    }
+  },
+  "rejected_mentions": [
+    {
+      "legacy_id": 22401,
+      "name": "Tonya Coniglio",
+      "mentioned_platform": "facebook",
+      "field": "quote",
+      "snippet": "Beach. We found Ryan through Facebook and I'm so happy we did. Ryan was so friendly and a",
+      "why_rejected": "Describes how the client found the photographer, not where the review was published."
+    },
+    {
+      "legacy_id": 26266,
+      "name": "Andrew Chambers",
+      "mentioned_platform": "google",
+      "field": "quote",
+      "snippet": "re that moment. So, I went to Google and Ryan was one of the first photographers I found.",
+      "why_rejected": "Describes a search that led to the photographer, not a Google review."
+    },
+    {
+      "legacy_id": 27463,
+      "name": "Erica Diamond",
+      "mentioned_platform": "facebook",
+      "field": "quote",
+      "snippet": "er the few photos I posted on Facebook.",
+      "why_rejected": "Refers to photos the client posted, not to a review platform record."
+    },
+    {
+      "legacy_id": 32869,
+      "name": "Carole Taylor",
+      "mentioned_platform": "google",
+      "field": "quote",
+      "snippet": "I found Ryan by searching Google, and saw his portfolio on his website. We are from Dallas",
+      "why_rejected": "Describes a search that led to the photographer, not a Google review."
+    },
+    {
+      "legacy_id": 45513,
+      "name": "Ashley Stull",
+      "mentioned_platform": "google",
+      "field": "url",
+      "snippet": "https://goo.gl/maps/oJyCNPHeHPk5UDXi6",
+      "why_rejected": "Stored in _aditional_info_url, the legacy client or business link field, not a review source field. Testimonials Showcase has no field for the public URL of the review itself."
+    },
+    {
+      "legacy_id": 59466,
+      "name": "Nicole Edwards",
+      "mentioned_platform": "weddingwire",
+      "field": "quote",
+      "snippet": "vendors. I found Ryan through WeddingWire and he made the process so easy. He was always q",
+      "why_rejected": "Describes how the client found the photographer, not where the review was published."
+    },
+    {
+      "legacy_id": 60597,
+      "name": "Amanda Dorsey",
+      "mentioned_platform": "instagram",
+      "field": "url",
+      "snippet": "https://www.instagram.com/p/CJjwv1Vr1LM/?utm_source=ig_web_copy_link",
+      "why_rejected": "A link to an Instagram post stored in the client-link field. Instagram is not a review platform and no review record is identified."
+    },
+    {
+      "legacy_id": 75956,
+      "name": "Tracey Broome",
+      "mentioned_platform": "google",
+      "field": "quote",
+      "snippet": "an Smith simply from a random Google search for photographers in the Myrtle Beach area and",
+      "why_rejected": "Describes a search that led to the photographer, not a Google review."
+    },
+    {
+      "legacy_id": 82021,
+      "name": "Haleigh Pitcock",
+      "mentioned_platform": "google",
+      "field": "quote",
+      "snippet": "hile we were there. I browsed Google searches and came across Ryan Smith Photography. Goin",
+      "why_rejected": "Describes a search that led to the photographer, not a Google review."
+    },
+    {
+      "legacy_id": 83100,
+      "name": "Elizabeth Cotter",
+      "mentioned_platform": "google and instagram",
+      "field": "quote",
+      "snippet": "unity for family photos. On a Google search and then by reviewing Instagram, we liked Ryan",
+      "why_rejected": "Describes how the clients researched the photographer, not where they published a review."
+    }
+  ],
+  "totals": {
+    "records_audited": 242,
+    "source_google": 2,
+    "source_direct": 240,
+    "lookup_matched": 2,
+    "lookup_not_found": 240,
+    "lookup_blocked": 0,
+    "records_with_empty_source": 0,
+    "records_with_empty_lookup": 0,
+    "records_with_guessed_source": 0
+  }
+}

@@ -9,10 +9,16 @@
  * Native <dialog> is used rather than a lightbox library. It gives focus management,
  * Escape to close, a backdrop and an inert background for free, and adds no dependency.
  *
- * Progressive enhancement: without JavaScript the quote is not clamped, the full text
- * is on the page, and the open control stays hidden. Nothing depends on a request, so
- * View more and the dialogs work offline and cannot trigger a database or provider query
- * from a visitor click.
+ * Page weight. The complete quote appears in the HTML exactly once, inside the card, and
+ * the dialog is populated from it on first open. The photo is likewise referenced once and
+ * cloned into the dialog rather than emitted twice. Without JavaScript the quote is not
+ * clamped at all, so the full text is already on the page and nothing is lost.
+ *
+ * No request is made by any interaction. View more reveals already-rendered cards and the
+ * dialogs read from markup already present, so a visitor click cannot trigger a database
+ * or provider query. The optional query-string category filter keeps that property: it
+ * narrows the one page query the shortcode was already going to run, and never reaches
+ * out to a review provider.
  *
  * @package ShootCalTestimonials
  */
@@ -31,18 +37,38 @@ class Shortcode {
 	/**
 	 * Ceiling on items rendered by one shortcode instance.
 	 *
-	 * This is a page-weight guard, not a design constraint. The ShootCal Websites
-	 * block caps at nine because its quotes are authored inline in the page document;
-	 * WordPress stores testimonials as posts, so a higher ceiling is appropriate here.
-	 * The difference is a storage consequence and is recorded as an accepted platform
-	 * variation rather than hidden.
+	 * This is a page-weight guard, not a design constraint. The ShootCal Websites block
+	 * caps at nine because its quotes are authored inline in the page document; WordPress
+	 * stores testimonials as posts, so a higher ceiling is appropriate here. Recorded in
+	 * AGENTS.md as an accepted platform variation rather than hidden.
 	 */
 	public const CEILING = 60;
+
+	/**
+	 * Default total rendered when View more is on. Kept well below the ceiling so a long
+	 * library cannot silently balloon the HTML.
+	 */
+	public const DEFAULT_TOTAL = 24;
 
 	/**
 	 * Lines of quote shown on a card before it clamps.
 	 */
 	public const CLAMP_LINES = 5;
+
+	/**
+	 * Query-string parameter that may override the category attribute.
+	 *
+	 * Only read when a shortcode instance opts in with allow_query="on".
+	 */
+	public const QUERY_VAR = 'sct_category';
+
+	/**
+	 * Ceiling on slugs accepted from the query string.
+	 *
+	 * Bounds the tax_query a visitor can influence, so a long comma list cannot be used
+	 * to build an expensive query.
+	 */
+	public const QUERY_TERMS_MAX = 12;
 
 	/**
 	 * Hook registration.
@@ -61,45 +87,68 @@ class Shortcode {
 	/**
 	 * Render the shortcode.
 	 *
+	 * Accepted attributes: category, allow_query, count, total, columns, more, orderby,
+	 * order, heading, eyebrow, intro and lines. Unknown keys are dropped by
+	 * shortcode_atts(), which is what lets the block renderer hand over its own attribute
+	 * set without the two surfaces drifting apart.
+	 *
 	 * @param array<string,mixed>|string $atts Shortcode attributes.
 	 */
 	public function render( $atts = array() ): string {
 		$atts = shortcode_atts(
 			array(
-				'category' => '',
-				'count'    => (string) Config::get( 'default_count' ),
-				'columns'  => (string) Config::get( 'default_columns' ),
-				'more'     => (string) Config::get( 'default_more' ),
-				'orderby'  => 'date',
-				'order'    => 'DESC',
-				'heading'  => '',
-				'eyebrow'  => '',
-				'intro'    => '',
-				'lines'    => (string) self::CLAMP_LINES,
+				'category'    => '',
+				'allow_query' => 'off',
+				'count'       => (string) Config::get( 'default_count' ),
+				'total'       => '',
+				'columns'     => (string) Config::get( 'default_columns' ),
+				'more'        => (string) Config::get( 'default_more' ),
+				'orderby'     => 'date',
+				'order'       => 'DESC',
+				'heading'     => '',
+				'eyebrow'     => '',
+				'intro'       => '',
+				'lines'       => (string) self::CLAMP_LINES,
 			),
 			$atts,
 			'shootcal_testimonials'
 		);
 
-		$columns = Config::normalize_columns( $atts['columns'] );
-		$count   = max( 1, min( self::CEILING, (int) $atts['count'] ) );
-		$more    = in_array( $atts['more'], array( 'show', 'hide' ), true ) ? $atts['more'] : 'hide';
-		$lines   = max( 2, min( 12, (int) $atts['lines'] ) );
+		$columns     = Config::normalize_columns( $atts['columns'] );
+		$count       = max( 1, min( self::CEILING, (int) $atts['count'] ) );
+		$more        = in_array( $atts['more'], array( 'show', 'hide' ), true ) ? $atts['more'] : 'hide';
+		$lines       = max( 2, min( 12, (int) $atts['lines'] ) );
+		$allow_query = in_array( $atts['allow_query'], array( 'on', 'off' ), true ) ? $atts['allow_query'] : 'off';
 
-		$posts = $this->query( (string) $atts['category'], $count, (string) $atts['orderby'], (string) $atts['order'] );
+		// With View more on, fetch more than the initial count so there is something to
+		// reveal. Without it, the initial count is the whole query and no card is hidden.
+		if ( 'show' === $more ) {
+			$requested = '' !== trim( (string) $atts['total'] ) ? (int) $atts['total'] : self::DEFAULT_TOTAL;
+			$total     = max( $count + 1, min( self::CEILING, $requested ) );
+		} else {
+			$total = $count;
+		}
+
+		$category = $this->resolve_category( (string) $atts['category'], $allow_query );
+		$posts    = $this->query( $category, $total, (string) $atts['orderby'], (string) $atts['order'] );
 
 		if ( array() === $posts ) {
 			return '';
 		}
 
-		$items = '';
-		$index = 0;
+		$items   = '';
+		$dialogs = '';
+		$index   = 0;
 
 		foreach ( $posts as $post ) {
 			++$index;
-			$items .= $this->render_item( $post, $index > $count && 'show' === $more, $lines );
+			$rendered = $this->render_item( $post, $index > $count, $lines );
+			$items   .= $rendered['card'];
+			$dialogs .= $rendered['dialog'];
 		}
 
+		// Dialogs are collected outside the grid so they never become grid items, and
+		// outside each card so an ancestor transform or overflow cannot trap a modal.
 		$button = '';
 
 		if ( 'show' === $more && count( $posts ) > $count ) {
@@ -118,17 +167,83 @@ class Shortcode {
 		 * @param \WP_Post[] $posts    Rendered testimonials.
 		 * @param bool       $has_more Whether View more is enabled for this instance.
 		 */
-		do_action( 'sct_rendered', $posts, 'show' === $more );
+		do_action( 'sct_rendered', $posts, '' !== $button );
 
 		return sprintf(
-			'<section class="sct-section sct-testimonials" data-sct-columns="%1$d" data-sct-initial="%2$d" data-sct-lines="%3$d">%4$s<div class="sct-testimonials__grid sct-testimonials__grid--%1$d">%5$s</div>%6$s</section>',
+			'<section class="sct-section sct-testimonials" style="--sct-lines:%1$d" data-sct-columns="%2$d" data-sct-initial="%3$d">%4$s<div class="sct-testimonials__grid sct-testimonials__grid--%2$d">%5$s</div>%6$s%7$s</section>',
+			$lines,
 			$columns,
 			$count,
-			$lines,
 			$this->render_heading( $atts ),
 			$items,
-			$button
+			$button,
+			$dialogs
 		);
+	}
+
+	/**
+	 * Resolve the category filter for this instance.
+	 *
+	 * With allow_query="on" a `sct_category` query-string parameter replaces the category
+	 * attribute, which lets one page serve two URLs with different filters without a
+	 * second shortcode or a second page.
+	 *
+	 * Narrowing only. The query it feeds already pins post_type to the testimonial type
+	 * and post_status to publish, and the taxonomy is a constant rather than input, so the
+	 * worst a crafted URL can do is select a different set of published testimonials.
+	 * Every part is passed through sanitize_title(), duplicates and blanks are dropped,
+	 * the list is capped, and any slug that is not a real term is discarded so a bogus
+	 * value falls back to the attribute instead of rendering an empty section.
+	 *
+	 * This costs one cached taxonomy read and only when the parameter is actually present.
+	 * It never triggers an outbound request.
+	 *
+	 * Deployment note: a page using allow_query="on" must not be served from a page cache
+	 * keyed on the path alone, or every visitor sees whichever variant was cached first.
+	 *
+	 * @param string $attribute   Category attribute, comma separated slugs.
+	 * @param string $allow_query 'on' or 'off'.
+	 */
+	private function resolve_category( string $attribute, string $allow_query ): string {
+		if ( 'on' !== $allow_query ) {
+			return $attribute;
+		}
+
+		// Read-only public filter. No state changes, so no nonce applies.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$raw = isset( $_GET[ self::QUERY_VAR ] ) ? sanitize_text_field( wp_unslash( $_GET[ self::QUERY_VAR ] ) ) : '';
+
+		if ( '' === trim( $raw ) ) {
+			return $attribute;
+		}
+
+		$requested = array();
+
+		foreach ( explode( ',', $raw ) as $part ) {
+			$slug = sanitize_title( trim( $part ) );
+
+			if ( '' !== $slug && ! in_array( $slug, $requested, true ) ) {
+				$requested[] = $slug;
+			}
+		}
+
+		if ( array() === $requested ) {
+			return $attribute;
+		}
+
+		$requested = array_slice( $requested, 0, self::QUERY_TERMS_MAX );
+
+		$known = get_terms(
+			array(
+				'taxonomy'   => TAXONOMY,
+				'fields'     => 'slugs',
+				'hide_empty' => false,
+			)
+		);
+
+		$valid = is_array( $known ) ? array_values( array_intersect( $requested, $known ) ) : array();
+
+		return array() === $valid ? $attribute : implode( ',', $valid );
 	}
 
 	/**
@@ -211,28 +326,31 @@ class Shortcode {
 	 * @param \WP_Post $post   Testimonial post.
 	 * @param bool     $hidden Whether the card starts collapsed behind View more.
 	 * @param int      $lines  Quote lines to clamp to.
+	 * @return array{card:string,dialog:string}
 	 */
-	private function render_item( \WP_Post $post, bool $hidden, int $lines ): string {
+	private function render_item( \WP_Post $post, bool $hidden, int $lines ): array {
 		$quote  = $this->quote_text( $post );
 		$name   = get_the_title( $post );
 		$rating = Meta::normalize_rating( get_post_meta( $post->ID, META_PREFIX . 'rating', true ) );
 		$source = Meta::normalize_source( get_post_meta( $post->ID, META_PREFIX . 'source', true ) );
 
 		if ( '' === trim( $quote ) || '' === trim( $name ) ) {
-			return '';
+			return array(
+				'card'   => '',
+				'dialog' => '',
+			);
 		}
 
-		$classes = array( 'sct-testimonial' );
+		$classes     = array( 'sct-testimonial' );
+		$date        = mysql2date( 'F j, Y', $post->post_date );
+		$media       = $this->render_media( $post, $name, $classes );
+		$stars       = ( $rating > 0 && Config::get( 'show_rating', true ) ) ? $this->render_rating( $rating ) : '';
+		$source_line = $this->render_source( $post, $source );
+		$dialog_id   = 'sct-dialog-' . $post->ID;
 
 		if ( $hidden ) {
 			$classes[] = 'sct-testimonial--hidden';
 		}
-
-		$date    = mysql2date( 'F j, Y', $post->post_date );
-		$media   = $this->render_media( $post, $name, $classes );
-		$stars   = ( $rating > 0 && Config::get( 'show_rating', true ) ) ? $this->render_rating( $rating ) : '';
-		$source_line = $this->render_source( $post, $source );
-		$dialog_id   = 'sct-dialog-' . $post->ID;
 
 		$attribution = '<figcaption class="sct-testimonial__by"><span class="sct-testimonial__name">' . esc_html( $name ) . '</span>';
 
@@ -242,15 +360,11 @@ class Shortcode {
 
 		$attribution .= '</figcaption>';
 
-		// The card quote is clamped by CSS only when JavaScript is present, so the
-		// full text remains readable without it. The dialog always carries the
-		// complete wording, unmodified.
 		$card = sprintf(
-			'<figure class="%1$s" data-sct-card>%2$s<div class="sct-testimonial__body">%3$s<blockquote class="sct-testimonial__quote" style="--sct-lines:%4$d">&#8220;%5$s&#8221;</blockquote>%6$s%7$s</div><button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="%8$s">%9$s</button></figure>',
+			'<figure class="%1$s" data-sct-card>%2$s<div class="sct-testimonial__body">%3$s<blockquote class="sct-testimonial__quote" data-sct-quote>%4$s</blockquote>%5$s%6$s</div><button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="%7$s">%8$s</button></figure>',
 			esc_attr( implode( ' ', $classes ) ),
 			$media,
 			$stars,
-			$lines,
 			esc_html( $quote ),
 			$attribution,
 			$source_line,
@@ -258,37 +372,44 @@ class Shortcode {
 			esc_html__( 'Read full review', 'shootcal-testimonials' )
 		);
 
-		$dialog = $this->render_dialog( $dialog_id, $post, $name, $quote, $date, $rating, $source_line );
+		$dialog = $this->render_dialog( $dialog_id, $name, $date, $rating, $source_line );
 
-		return $card . $dialog;
+		return array(
+			'card'   => $card,
+			'dialog' => $dialog,
+		);
 	}
 
 	/**
 	 * Render the card media area.
 	 *
-	 * A fixed aspect ratio is reserved whether or not a photo exists, because cards
-	 * only line up across the grid when every media block has the same height. Where
-	 * there is no photo the reviewer's initials sit on a soft gradient instead.
+	 * A fixed aspect ratio is reserved whether or not a photo exists, because cards only
+	 * line up across the grid when every media block has the same height. Where there is
+	 * no photo the reviewer's initials sit on a soft gradient instead.
 	 *
 	 * @param \WP_Post $post    Testimonial post.
 	 * @param string   $name    Reviewer display name.
-	 * @param string[] $classes Class list, appended to by reference semantics.
+	 * @param string[] $classes Class list, appended to in place.
 	 */
 	private function render_media( \WP_Post $post, string $name, array &$classes ): string {
 		if ( Config::get( 'show_photo', true ) && has_post_thumbnail( $post ) ) {
 			$classes[] = 'sct-testimonial--photo';
 
-			return '<div class="sct-testimonial__media">'
-				. get_the_post_thumbnail( $post, 'medium_large', array( 'loading' => 'lazy' ) )
+			// skip-lazy is the cross-plugin marker that tells lazy-loaders to leave an
+			// image alone; the dialog clones this node, so it must keep a real src.
+			$thumb = (string) get_the_post_thumbnail( $post, 'medium_large', array( 'loading' => 'lazy' ) );
+			$thumb = preg_replace( '/ class="([^"]*)"/', ' class="$1 skip-lazy"', $thumb, 1 );
+
+			return '<div class="sct-testimonial__media" data-sct-media>'
+				. $thumb
 				. '</div>';
 		}
 
-		$initials = $this->initials( $name );
 		$classes[] = 'sct-testimonial--monogram';
 
 		return sprintf(
-			'<div class="sct-testimonial__media sct-testimonial__media--monogram" data-initial="%1$s" aria-hidden="true"><span>%1$s</span></div>',
-			esc_attr( $initials )
+			'<div class="sct-testimonial__media sct-testimonial__media--monogram" aria-hidden="true"><span>%s</span></div>',
+			esc_html( $this->initials( $name ) )
 		);
 	}
 
@@ -303,10 +424,13 @@ class Shortcode {
 
 		foreach ( $parts as $part ) {
 			$part = trim( $part );
+
 			if ( '' === $part ) {
 				continue;
 			}
-			$out .= function_exists( 'mb_strtoupper' ) ? mb_substr( $part, 0, 1 ) : substr( $part, 0, 1 );
+
+			$out .= function_exists( 'mb_substr' ) ? mb_substr( $part, 0, 1 ) : substr( $part, 0, 1 );
+
 			if ( strlen( $out ) >= 2 ) {
 				break;
 			}
@@ -316,42 +440,37 @@ class Shortcode {
 	}
 
 	/**
-	 * The dialog carrying the complete review.
+	 * The dialog shell.
+	 *
+	 * The quote and the photo are deliberately absent from the server output. Both are
+	 * copied in from the card on first open, which keeps the complete review text in the
+	 * HTML exactly once instead of twice. The heading, rating, byline and source line are
+	 * rendered here so the dialog has a correct accessible name before script runs.
 	 *
 	 * @param string $id          Element id referenced by the opener.
-	 * @param \WP_Post $post      Testimonial post.
 	 * @param string $name        Reviewer display name.
-	 * @param string $quote       Complete quote text.
 	 * @param string $date        Formatted review date.
 	 * @param int    $rating      0 to 5.
 	 * @param string $source_line Pre-rendered source attribution.
 	 */
-	private function render_dialog( string $id, \WP_Post $post, string $name, string $quote, string $date, int $rating, string $source_line ): string {
-		$photo = '';
-
-		if ( Config::get( 'show_photo', true ) && has_post_thumbnail( $post ) ) {
-			$photo = '<div class="sct-dialog__media">' . get_the_post_thumbnail( $post, 'large', array( 'loading' => 'lazy' ) ) . '</div>';
-		}
-
+	private function render_dialog( string $id, string $name, string $date, int $rating, string $source_line ): string {
 		$stars = ( $rating > 0 && Config::get( 'show_rating', true ) ) ? $this->render_rating( $rating ) : '';
 
-		$meta = '<div class="sct-dialog__by"><span class="sct-dialog__name">' . esc_html( $name ) . '</span>';
+		$by = '<div class="sct-dialog__by"><span class="sct-dialog__name">' . esc_html( $name ) . '</span>';
 
 		if ( Config::get( 'show_date', true ) && '' !== $date ) {
-			$meta .= '<span class="sct-dialog__date">' . esc_html( $date ) . '</span>';
+			$by .= '<span class="sct-dialog__date">' . esc_html( $date ) . '</span>';
 		}
 
-		$meta .= '</div>';
+		$by .= '</div>';
 
 		return sprintf(
-			'<dialog class="sct-dialog" id="%1$s" data-sct-dialog aria-labelledby="%1$s-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="%2$s">&#215;</button>%3$s<div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="%1$s-title">%4$s</h3>%5$s<blockquote class="sct-dialog__quote">&#8220;%6$s&#8221;</blockquote>%7$s%8$s</div></div></dialog>',
+			'<dialog class="sct-dialog" id="%1$s" data-sct-dialog aria-labelledby="%1$s-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="%2$s">&#215;</button><div class="sct-dialog__media" data-sct-dialog-media></div><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="%1$s-title">%3$s</h3>%4$s<blockquote class="sct-dialog__quote" data-sct-dialog-quote></blockquote>%5$s%6$s</div></div></dialog>',
 			esc_attr( $id ),
 			esc_attr__( 'Close', 'shootcal-testimonials' ),
-			$photo,
 			esc_html( sprintf( /* translators: %s: reviewer name. */ __( '%s review', 'shootcal-testimonials' ), $name ) ),
 			$stars,
-			esc_html( $quote ),
-			$meta,
+			$by,
 			$source_line
 		);
 	}
@@ -372,12 +491,15 @@ class Shortcode {
 	/**
 	 * Source attribution line.
 	 *
-	 * Only Google-sourced testimonials get the Google mark and the "Originally posted
-	 * on Google" label. Other platforms get a plain text credit, so the plugin never
-	 * renders a third-party brand it holds no usage guidance for.
+	 * Google-sourced testimonials get the "Originally posted on Google" label and every
+	 * other platform gets a plain text credit, so the plugin never renders a third-party
+	 * brand it holds no usage guidance for. No badge is drawn beside any of them:
+	 * Google's brand rules require the official, unaltered G and forbid a custom one, and
+	 * no official asset ships with this plugin. Text attribution alone is nominative and
+	 * compliant. Add a mark here only from Google's own brand resource.
 	 *
-	 * Stars are rendered in the card body, deliberately separate from this line,
-	 * because Google's brand rules forbid placing stars beside the Google name or logo.
+	 * Stars are rendered in the card body, deliberately separate from this line, because
+	 * Google's brand rules forbid placing stars beside the Google name or logo.
 	 *
 	 * @param \WP_Post $post   Testimonial post.
 	 * @param string   $source Normalized source key.
@@ -392,14 +514,12 @@ class Shortcode {
 
 		if ( 'google' === $source ) {
 			$label = __( 'Originally posted on Google', 'shootcal-testimonials' );
-			$mark  = '<span class="sct-source__mark" aria-hidden="true">' . $this->google_mark() . '</span>';
 		} else {
 			$label = sprintf(
 				/* translators: %s: platform name. */
 				__( 'Originally posted on %s', 'shootcal-testimonials' ),
 				ucfirst( $source )
 			);
-			$mark  = '';
 		}
 
 		$link = '';
@@ -414,34 +534,22 @@ class Shortcode {
 		}
 
 		return sprintf(
-			'<p class="sct-source sct-source--%1$s">%2$s<span class="sct-source__label">%3$s</span>%4$s</p>',
+			'<p class="sct-source sct-source--%1$s"><span class="sct-source__label">%2$s</span>%3$s</p>',
 			esc_attr( $source ),
-			$mark,
 			esc_html( $label ),
 			$link
 		);
 	}
 
 	/**
-	 * Inline Google G mark.
-	 *
-	 * Placeholder geometry only. Before this ships to other users the official asset
-	 * must be swapped in from Google's brand resource centre, used unaltered, with
-	 * correct clear space and no custom badge built around it.
-	 */
-	private function google_mark(): string {
-		return '<svg viewBox="0 0 48 48" width="14" height="14" focusable="false" role="presentation"><circle cx="24" cy="24" r="20" fill="currentColor"/></svg>';
-	}
-
-	/**
 	 * The quote text.
 	 *
-	 * Stored in post_content, unlike the legacy plugin which kept display text in meta
-	 * and left post_content empty. The importer maps that across.
+	 * Stored in post_content, unlike the legacy plugin which kept display text in meta and
+	 * left post_content empty. The importer maps that across.
 	 *
-	 * Reviewer wording, punctuation and paragraph breaks are preserved exactly. Markup
-	 * is stripped but the text is never rewritten, and em dashes in a client quote are
-	 * left alone because the no-em-dash preference applies to copy we author.
+	 * Reviewer wording, punctuation and paragraph breaks are preserved exactly. Markup is
+	 * stripped but the text is never rewritten, and em dashes in a client quote are left
+	 * alone because the no-em-dash preference applies to copy we author.
 	 *
 	 * @param \WP_Post $post Testimonial post.
 	 */
@@ -452,7 +560,10 @@ class Shortcode {
 			return '';
 		}
 
-		$text = wp_strip_all_tags( $text, true );
+		// Strip tags only. wp_strip_all_tags() with $remove_breaks collapses every run of
+		// whitespace to a single space, which would flatten the paragraph breaks the
+		// normalization below and the card's white-space: pre-line both depend on.
+		$text = wp_strip_all_tags( $text );
 		$text = str_replace( array( "\r\n", "\r" ), "\n", $text );
 		$text = preg_replace( '/[ \t]+\n/', "\n", $text ) ?? $text;
 		$text = preg_replace( '/\n{3,}/', "\n\n", $text ) ?? $text;

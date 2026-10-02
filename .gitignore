@@ -1,5 +1,29 @@
+# Mac
 .DS_Store
+._*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node / build (in case we ever add a build step)
 node_modules/
 vendor/
-*.zip
+build/
+dist/
 *.log
+
+# Packaging output — release ZIPs are built by CI, not checked in
+*.zip
+/release/
+
+# Local WP dev artifacts
+wp-cli.local.yml
+*.sql
+*.sql.gz
+
+# PHPUnit
+.phpunit.result.cache
+.phpunit.cache/

@@ -47,16 +47,33 @@ class Assets {
 			SLUG,
 			PLUGIN_URL . 'assets/css/frontend.css',
 			array(),
-			VERSION
+			self::version_for( 'assets/css/frontend.css' )
 		);
 
 		wp_register_script(
 			SLUG,
 			PLUGIN_URL . 'assets/js/frontend.js',
 			array(),
-			VERSION,
+			self::version_for( 'assets/js/frontend.js' ),
 			true
 		);
+	}
+
+	/**
+	 * Cache-busting version for one asset file.
+	 *
+	 * The host serves static files with a thirty day max-age and no revalidation, and
+	 * the ?ver= query only changes when VERSION changes, so a fix shipped inside one
+	 * release would stay invisible to returning visitors for a month. Appending the
+	 * file's own modification time makes the query change exactly when the file does.
+	 *
+	 * @param string $relative Path below the plugin directory.
+	 */
+	public static function version_for( string $relative ): string {
+		$file  = PLUGIN_DIR . $relative;
+		$mtime = is_file( $file ) ? filemtime( $file ) : false;
+
+		return VERSION . ( false === $mtime ? '' : '.' . $mtime );
 	}
 
 	/**

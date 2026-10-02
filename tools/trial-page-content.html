@@ -1,0 +1,29 @@
+<!-- wp:paragraph -->
+<p>This page is a trial of ShootCal Testimonials running alongside Testimonials Showcase. The legacy plugin stays active and every existing testimonial page is unchanged.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Block render, filtered to Engagement Pictures</h2>
+<!-- /wp:heading -->
+
+<!-- wp:shootcal/testimonials {"category":"engagement-pictures"} /-->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Shortcode render, category taken from the URL</h2>
+<!-- /wp:heading -->
+
+<!-- wp:paragraph -->
+<p>Add <code>?sct_category=wedding-photography</code> or <code>?sct_category=family-pictures</code> to this page address to filter the grid below. Nothing is fetched in the background, because the filter is applied to the normal page query.</p>
+<!-- /wp:paragraph -->
+
+<!-- wp:shortcode -->
+[shootcal_testimonials allow_query="on" count="9" more="show"]
+<!-- /wp:shortcode -->
+
+<!-- wp:heading -->
+<h2 class="wp-block-heading">Share your experience</h2>
+<!-- /wp:heading -->
+
+<!-- wp:shortcode -->
+[shootcal_testimonial_form]
+<!-- /wp:shortcode -->

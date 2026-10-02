@@ -7,7 +7,7 @@
  *
  * Progressive enhancement. Nothing here clamps a quote or reveals an open control until
  * JavaScript adds .sct-js to the section, so without script the full review is simply
- * on the page and readable.
+ * on the page and readable. The submission form needs no script at all.
  */
 
 .sct-testimonials {
@@ -94,6 +94,58 @@
 	display: none;
 }
 
+/* Theme isolation. Cards and dialogs opt out of whatever the active theme applies to
+   figures, quotes, images and links, so the card lift stays the only hover effect and
+   no theme quote glyph, border or tint decorates a review. The !important hovers win
+   against theme rules of any specificity; ties elsewhere resolve to this sheet because
+   it loads after the theme's. */
+.sct-testimonials figure,
+.sct-testimonials blockquote,
+.sct-dialog figure,
+.sct-dialog blockquote {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+	font-style: normal;
+	font-size: inherit;
+	quotes: none;
+}
+
+.sct-testimonials blockquote::before,
+.sct-testimonials blockquote::after,
+.sct-dialog blockquote::before,
+.sct-dialog blockquote::after {
+	content: none !important;
+}
+
+.sct-testimonials img,
+.sct-dialog img {
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	filter: none;
+	opacity: 1;
+	transform: none;
+}
+
+.sct-testimonials img:hover,
+.sct-dialog img:hover,
+.sct-testimonials a:hover img,
+.sct-dialog a:hover img,
+.sct-testimonials figure:hover img,
+.sct-dialog figure:hover img {
+	transform: none !important;
+	opacity: 1 !important;
+	filter: none !important;
+	box-shadow: none !important;
+}
+
+.sct-testimonials a,
+.sct-dialog a {
+	color: inherit;
+}
+
 .sct-js .sct-testimonial[data-sct-card] {
 	cursor: pointer;
 }
@@ -123,11 +175,6 @@
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
-	transition: transform 400ms ease;
-}
-
-.sct-js .sct-testimonial[data-sct-card]:hover .sct-testimonial__media img {
-	transform: scale( 1.035 );
 }
 
 .sct-testimonial__media--monogram {
@@ -258,25 +305,16 @@
 	color: var( --sct-muted );
 }
 
-.sct-source__mark {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	color: #4285f4;
-}
-
-.sct-source__mark svg {
-	display: block;
-}
-
 .sct-source__link {
 	color: inherit;
 	text-decoration: underline;
 	text-underline-offset: 0.16em;
 }
 
-.sct-source__link:hover,
-.sct-source__link:focus-visible {
+.sct-testimonials .sct-source__link:hover,
+.sct-testimonials .sct-source__link:focus-visible,
+.sct-dialog .sct-source__link:hover,
+.sct-dialog .sct-source__link:focus-visible {
 	color: #111827;
 }
 
@@ -321,6 +359,12 @@
 	width: 100%;
 	max-height: 46vh;
 	object-fit: cover;
+}
+
+/* The media container is an empty shell until script copies the card photo into it, so
+   it must not reserve space on dialogs that have no photo. */
+.sct-dialog__media:empty {
+	display: none;
 }
 
 .sct-dialog__close {
@@ -423,6 +467,190 @@
 	outline-offset: 2px;
 }
 
+/* Public submission form. Shares the card design language so a form sitting under a
+   testimonial list reads as part of the same section. Nothing here depends on script: the
+   form posts, the server validates, and the confirmation comes back on the next page load. */
+.sct-form-wrap {
+	--sct-radius: 18px;
+	--sct-radius-sm: 12px;
+	--sct-muted: #5d6672;
+	--sct-line: rgba( 15, 23, 42, 0.09 );
+	--sct-shadow: 0 1px 2px rgba( 15, 23, 42, 0.05 ), 0 8px 24px -12px rgba( 15, 23, 42, 0.18 );
+	--sct-shadow-lift: 0 2px 4px rgba( 15, 23, 42, 0.06 ), 0 18px 40px -16px rgba( 15, 23, 42, 0.28 );
+	--sct-danger: #b42318;
+	--sct-danger-ink: #912018;
+	--sct-success: #067647;
+	--sct-success-ink: #085d3a;
+	position: relative;
+	max-width: 44rem;
+	margin-block: 3rem;
+}
+
+.sct-form {
+	display: flex;
+	flex-direction: column;
+	gap: 1.1rem;
+	padding: 1.6rem 1.6rem 1.7rem;
+	border: 1px solid var( --sct-line );
+	border-radius: var( --sct-radius );
+	background: #fff;
+	box-shadow: var( --sct-shadow );
+}
+
+.sct-form__field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	margin: 0;
+}
+
+.sct-form__label {
+	font-size: 0.86rem;
+	font-weight: 650;
+	letter-spacing: -0.005em;
+}
+
+.sct-form__required {
+	color: var( --sct-danger );
+}
+
+.sct-form__help {
+	font-size: 0.78rem;
+	line-height: 1.5;
+	color: var( --sct-muted );
+}
+
+.sct-form input[type="text"],
+.sct-form input[type="email"],
+.sct-form select,
+.sct-form textarea {
+	width: 100%;
+	padding: 0.66rem 0.8rem;
+	border: 1px solid rgba( 15, 23, 42, 0.18 );
+	border-radius: var( --sct-radius-sm );
+	background: #fff;
+	font: inherit;
+	font-size: 0.93rem;
+	color: #1b2027;
+}
+
+.sct-form textarea {
+	min-height: 8rem;
+	resize: vertical;
+	line-height: 1.6;
+}
+
+.sct-form input:focus-visible,
+.sct-form select:focus-visible,
+.sct-form textarea:focus-visible {
+	border-color: #2563eb;
+	outline: 2px solid #2563eb;
+	outline-offset: 1px;
+}
+
+.sct-form [aria-invalid="true"] {
+	border-color: var( --sct-danger );
+}
+
+.sct-form__error {
+	font-size: 0.8rem;
+	color: var( --sct-danger );
+}
+
+/* Error summary. Announced by role="alert" and linked to each offending control, so the
+   list is usable with the stylesheet entirely absent. */
+.sct-form__errors {
+	margin-block-end: 1.1rem;
+	padding: 0.95rem 1.1rem;
+	border: 1px solid rgba( 180, 35, 24, 0.3 );
+	border-inline-start: 3px solid var( --sct-danger );
+	border-radius: var( --sct-radius-sm );
+	background: #fef4f2;
+}
+
+.sct-form__errors-title {
+	margin: 0 0 0.4rem;
+	font-size: 0.88rem;
+	font-weight: 650;
+	color: var( --sct-danger-ink );
+}
+
+.sct-form__errors ul {
+	margin: 0;
+	padding-inline-start: 1.15rem;
+	font-size: 0.84rem;
+	color: var( --sct-danger-ink );
+}
+
+.sct-form__errors a {
+	color: inherit;
+}
+
+.sct-form__notice {
+	margin-block-end: 1.1rem;
+	padding: 0.95rem 1.1rem;
+	border: 1px solid rgba( 6, 118, 71, 0.25 );
+	border-inline-start: 3px solid var( --sct-success );
+	border-radius: var( --sct-radius-sm );
+	background: #f0faf4;
+	font-size: 0.9rem;
+	color: var( --sct-success-ink );
+}
+
+.sct-form__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem;
+	margin: 0;
+}
+
+.sct-form__submit {
+	padding: 0.72rem 1.7rem;
+	border: 1px solid rgba( 15, 23, 42, 0.16 );
+	border-radius: 999px;
+	background: #fff;
+	box-shadow: var( --sct-shadow );
+	font: inherit;
+	font-size: 0.88rem;
+	font-weight: 620;
+	color: #1b2027;
+	cursor: pointer;
+	transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.sct-form__submit:hover,
+.sct-form__submit:focus-visible {
+	box-shadow: var( --sct-shadow-lift );
+	transform: translateY( -1px );
+}
+
+.sct-form__submit:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+.sct-form__note {
+	font-size: 0.78rem;
+	color: var( --sct-muted );
+}
+
+/* Honeypot. Off-screen rather than display:none, so it is still laid out for bots that
+   skip fields a stylesheet hid, while clip-path and aria-hidden keep it invisible and out
+   of the accessibility tree, and the negative tabindex keeps it out of the tab order. */
+.sct-form__hp {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect( 0, 0, 0, 0 );
+	clip-path: inset( 50% );
+	white-space: nowrap;
+	border: 0;
+}
+
 /* Live region: available to assistive technology, out of the visual flow. */
 .sct-live {
 	position: absolute;
@@ -438,13 +666,18 @@
 
 @media ( prefers-reduced-motion: reduce ) {
 	.sct-testimonial,
-	.sct-testimonial__media img,
 	.sct-more,
+	.sct-form__submit,
 	.sct-testimonial__open {
 		transition: none;
 	}
 
 	.sct-js .sct-testimonial[data-sct-card]:hover {
+		transform: none;
+	}
+
+	.sct-form__submit:hover,
+	.sct-form__submit:focus-visible {
 		transform: none;
 	}
 

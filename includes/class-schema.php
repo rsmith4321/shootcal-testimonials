@@ -148,7 +148,12 @@ class Schema {
 
 		printf(
 			"\n<script type=\"application/ld+json\" class=\"sct-schema\">%s</script>\n",
-			wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
+			/* JSON_HEX_TAG encodes < and > as \u003C and \u003E. Without it a stored value
+			   containing </script>, which any user with edit_posts can place into a
+			   testimonial from the post editor, would break out of this tag. The two
+			   UNESCAPED flags only affect slashes and unicode, so the payload stays
+			   readable. */
+			wp_json_encode( $payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG )
 		);
 	}
 }

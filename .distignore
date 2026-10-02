@@ -2,11 +2,12 @@
 node_modules/
 vendor/
 *.zip
+dist/
 *.log
 .git/
 .gitignore
 .distignore
 AGENTS.md
 tests/
-bin/
 qa/
+tools/
