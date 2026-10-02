@@ -65,6 +65,7 @@ class Block {
 	private const ATTRIBUTE_MAP = array(
 		'category'   => 'category',
 		'allowQuery' => 'allow_query',
+		'filter'     => 'filter',
 		'count'      => 'count',
 		'total'      => 'total',
 		'columns'    => 'columns',

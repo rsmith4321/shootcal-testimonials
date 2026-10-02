@@ -99,6 +99,7 @@ class Shortcode {
 			array(
 				'category'    => '',
 				'allow_query' => 'off',
+				'filter'      => 'hide',
 				'count'       => (string) Config::get( 'default_count' ),
 				'total'       => '',
 				'columns'     => (string) Config::get( 'default_columns' ),
@@ -129,6 +130,8 @@ class Shortcode {
 			$total = $count;
 		}
 
+		$filter = 'show' === $atts['filter'];
+		if ( $filter ) { $allow_query = 'on'; }
 		$category = $this->resolve_category( (string) $atts['category'], $allow_query );
 		$posts    = $this->query( $category, $total, (string) $atts['orderby'], (string) $atts['order'] );
 
@@ -179,15 +182,34 @@ class Shortcode {
 		do_action( 'sct_rendered', $rendered_posts, '' !== $button );
 
 		return sprintf(
-			'<section class="sct-section sct-testimonials" style="--sct-lines:%1$d" data-sct-columns="%2$d" data-sct-initial="%3$d">%4$s<div class="sct-testimonials__grid sct-testimonials__grid--%2$d">%5$s</div>%6$s%7$s</section>',
+			'<section id="%8$s" class="sct-section sct-testimonials" style="--sct-lines:%1$d" data-sct-columns="%2$d" data-sct-initial="%3$d">%4$s<div class="sct-testimonials__grid sct-testimonials__grid--%2$d">%5$s</div>%6$s%7$s</section>',
 			$lines,
 			$columns,
 			$count,
-			$this->render_heading( $atts ),
+			$this->render_heading( $atts ) . ( $filter ? $this->render_filter( $category, $instance ) : '' ),
 			$items,
 			$button,
-			$dialogs
+			$dialogs,
+			esc_attr( $instance )
 		);
+	}
+
+	/** Read-only category form; normal navigation also works without JavaScript. */
+	private function render_filter( string $category, string $instance ): string {
+		$terms = get_terms( array( 'taxonomy' => TAXONOMY, 'hide_empty' => true ) );
+		if ( ! is_array( $terms ) || count( $terms ) < 2 ) { return ''; }
+		$url = get_permalink( get_queried_object_id() );
+		if ( ! is_string( $url ) || '' === $url ) { return ''; }
+		$id = $instance . '-category';
+		$out = '<form class="sct-filter" method="get" action="' . esc_url( $url ) . '#' . esc_attr( $instance ) . '">';
+		$query = array();
+		wp_parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query );
+		foreach ( $query as $key => $value ) {
+			if ( is_scalar( $value ) && self::QUERY_VAR !== $key ) { $out .= '<input type="hidden" name="' . esc_attr( $key ) . '" value="' . esc_attr( (string) $value ) . '" />'; }
+		}
+		$out .= '<label for="' . esc_attr( $id ) . '">' . esc_html__( 'Review category', 'shootcal-testimonials' ) . '</label><select id="' . esc_attr( $id ) . '" name="' . esc_attr( self::QUERY_VAR ) . '"><option value="">' . esc_html__( 'All reviews', 'shootcal-testimonials' ) . '</option>';
+		foreach ( $terms as $term ) { $out .= '<option value="' . esc_attr( $term->slug ) . '"' . selected( $category, $term->slug, false ) . '>' . esc_html( $term->name ) . '</option>'; }
+		return $out . '</select><button type="submit">' . esc_html__( 'Filter reviews', 'shootcal-testimonials' ) . '</button></form>';
 	}
 
 	/**
@@ -370,9 +392,10 @@ class Shortcode {
 			$attribution .= '<span class="sct-testimonial__date">' . esc_html( $date ) . '</span>';
 		}
 
+		$category_text = '';
 		if ( Config::get( 'show_category', false ) ) {
 			$terms = get_the_terms( $post, TAXONOMY );
-			if ( is_array( $terms ) ) { $attribution .= '<span class="sct-testimonial__categories">' . esc_html( implode( ', ', wp_list_pluck( $terms, 'name' ) ) ) . '</span>'; }
+			if ( is_array( $terms ) ) { $category_text = implode( ', ', wp_list_pluck( $terms, 'name' ) ); $attribution .= '<span class="sct-testimonial__categories">' . esc_html( implode( ', ', wp_list_pluck( $terms, 'name' ) ) ) . '</span>'; }
 		}
 		$attribution .= '</figcaption>';
 
@@ -388,7 +411,7 @@ class Shortcode {
 			esc_html__( 'Read full review', 'shootcal-testimonials' )
 		);
 
-		$dialog = $this->render_dialog( $dialog_id, $name, $date, $rating, $source_line );
+		$dialog = $this->render_dialog( $dialog_id, $name, $date, $rating, $source_line, $category_text );
 
 		return array(
 			'card'   => $card,
@@ -469,19 +492,20 @@ class Shortcode {
 	 * @param int    $rating      0 to 5.
 	 * @param string $source_line Pre-rendered source attribution.
 	 */
-	private function render_dialog( string $id, string $name, string $date, int $rating, string $source_line ): string {
+	private function render_dialog( string $id, string $name, string $date, int $rating, string $source_line, string $category_text ): string {
 		$stars = ( $rating > 0 && Config::get( 'show_rating', true ) ) ? $this->render_rating( $rating ) : '';
 
-		$by = '<div class="sct-dialog__by"><span class="sct-dialog__name">' . esc_html( $name ) . '</span>';
+		$by = '<div class="sct-dialog__by">';
 
 		if ( Config::get( 'show_date', true ) && '' !== $date ) {
 			$by .= '<span class="sct-dialog__date">' . esc_html( $date ) . '</span>';
 		}
 
+		if ( '' !== $category_text ) { $by .= '<span class="sct-dialog__categories">' . esc_html( $category_text ) . '</span>'; }
 		$by .= '</div>';
 
 		return sprintf(
-			'<dialog class="sct-dialog" id="%1$s" data-sct-dialog aria-labelledby="%1$s-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="%2$s">&#215;</button><div class="sct-dialog__media" data-sct-dialog-media></div><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="%1$s-title">%3$s</h3>%4$s<blockquote class="sct-dialog__quote" data-sct-dialog-quote></blockquote>%5$s%6$s</div></div></dialog>',
+			'<dialog class="sct-dialog" id="%1$s" data-sct-dialog aria-labelledby="%1$s-title"><div class="sct-dialog__inner" tabindex="-1"><button type="button" class="sct-dialog__close" data-sct-close aria-label="%2$s">&#215;</button><div class="sct-dialog__media" data-sct-dialog-media></div><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="%1$s-title">%3$s</h3>%5$s%4$s<blockquote class="sct-dialog__quote" data-sct-dialog-quote></blockquote>%6$s</div></div></dialog>',
 			esc_attr( $id ),
 			esc_attr__( 'Close', 'shootcal-testimonials' ),
 			sprintf(

@@ -301,6 +301,7 @@
 					PanelBody,
 					{ title: __( 'Category filter', 'shootcal-testimonials' ), initialOpen: true },
 					createElement( CategoryFilter, { attributes: attributes, setAttributes: setAttributes } ),
+					createElement( ToggleControl, { label: __( 'Show a visitor category selector', 'shootcal-testimonials' ), checked: attributes.filter === 'show', __nextHasNoMarginBottom: true, onChange: function ( value ) { setAttributes( { filter: value ? 'show' : 'hide' } ); } } ),
 					createElement( ToggleControl, {
 						label: __( 'Allow a URL parameter to override these categories', 'shootcal-testimonials' ),
 						help: __( 'Lets ?sct_category=slug replace the ticked categories, so one page can serve two filtered URLs. The page must not be cached on its path alone.', 'shootcal-testimonials' ),

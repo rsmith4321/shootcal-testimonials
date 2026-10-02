@@ -822,3 +822,18 @@
 .sct-form textarea::placeholder { color: #5d6672; opacity: 1; }
 .sct-testimonials__intro,
 .sct-testimonials__eyebrow { color: inherit; }
+
+/* Review detail hierarchy and source alignment, isolated from theme rules. */
+.sct-source__label { display: inline-flex; align-items: center; min-width: 0; }
+.sct-source__mark { display: block !important; }
+.sct-dialog__heading-name { font-size: clamp(1.2rem, 1.1rem + .4vw, 1.45rem); }
+.sct-dialog__by { margin: -.2rem 0 .35rem; gap: .75rem; }
+.sct-dialog__categories { font-size: .82rem; color: #5d6672 !important; }
+.sct-dialog__inner:focus { outline: none; }
+.sct-dialog__close:focus:not(:focus-visible) { outline: none !important; box-shadow: 0 2px 12px rgba(15,23,42,.18) !important; }
+.sct-filter { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .65rem; margin: 0 0 1.6rem; }
+.sct-filter label { font-size: .9rem; font-weight: 600; }
+.sct-filter select, .sct-filter button { color-scheme: only light; background: #fff !important; color: #23292f !important; border: 1px solid #cbd1d8; border-radius: 999px; min-height: 44px; padding: .55rem 1rem; font: inherit; font-size: .9rem; max-width: 100%; }
+.sct-filter button { cursor: pointer; font-weight: 600; }
+.sct-filter select:focus-visible, .sct-filter button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+@media (max-width: 480px) { .sct-filter label { flex-basis: 100%; text-align: center; } }

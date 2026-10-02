@@ -78,6 +78,8 @@
 			populateDialog( card, dialog );
 			dialog.sctReturnFocus = card.querySelector( '[data-sct-open]' );
 			dialog.showModal();
+			var content = dialog.querySelector( '.sct-dialog__inner' );
+			if ( content ) { content.focus( { preventScroll: true } ); }
 		}
 	}
 
