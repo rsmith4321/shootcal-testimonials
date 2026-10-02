@@ -862,11 +862,13 @@ class Form {
 	 *
 	 * The hidden field carries the shortcode's redirect attribute, which is a client value
 	 * by the time it comes back, so it is validated again here. Anything off-host falls
-	 * back to the referer, and a missing referer falls back to the site root.
+	 * back to the same-host raw referer, including self-posted forms. WordPress
+	 * deliberately omits same-page URLs from wp_get_referer(), so use the raw
+	 * referer and validate it here. A missing referer falls back to the site root.
 	 */
 	private function redirect_target(): string {
 		$posted   = $this->posted_text( self::FIELD_REDIRECT );
-		$fallback = (string) wp_validate_redirect( (string) wp_get_referer(), home_url( '/' ) );
+		$fallback = (string) wp_validate_redirect( (string) wp_get_raw_referer(), home_url( '/' ) );
 
 		return '' !== $posted ? (string) wp_validate_redirect( $posted, $fallback ) : $fallback;
 	}
