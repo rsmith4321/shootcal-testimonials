@@ -4,11 +4,11 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.3.0
+Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Client testimonials stored as native WordPress content, shown as uniform cards with a full-review dialog, and collected from visitors through a moderated form.
+Modern testimonial cards and full-review dialogs, native WordPress storage, and a moderated submission form.
 
 == Description ==
 
@@ -107,7 +107,7 @@ Nothing. Uninstalling removes the plugin's options only. Testimonials, their pho
 
 = Is the Google mark the official asset? =
 
-There is no mark in this version. Google-sourced testimonials carry a plain-text attribution line, "Originally posted on Google", linking to the reviewer's public profile. That is nominative use and sidesteps the brand-asset question entirely. If you later add the official G yourself, use it unaltered with correct clear space, and never build a custom badge around it or place stars beside the Google name.
+Yes. The bundled gradient Google G was downloaded unmodified from Google’s official Partner Marketing Hub. It uses clear space equal to the mark width and remains separate from ratings. A source link may lead to the review listing or reviewer profile, so it is labelled "View review source".
 
 = I use a performance plugin (Perfmatters, WP Rocket, LiteSpeed Cache, Autoptimize) and the cards look unstyled or the dialog misbehaves. =
 
@@ -118,6 +118,16 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 Sixty per list. With View more enabled the default total held behind the button is twenty four. Both are page-weight guards rather than design constraints.
 
 == Changelog ==
+
+= 0.4.0 =
+* Modern accessible cards and dialogs, unique IDs for repeated lists, reliable keyboard focus and full-text fallback without JavaScript.
+* Conditional assets and admin-only editor/settings code; submission pages use no-cache headers to protect nonces and one-time notices.
+* Private research and consent notes limited to authorized REST edit context, with native metadata controls and per-post permissions.
+* Strict ratings, exact backslash/paragraph preservation, external-link spam validation and bounded sixty-card rendering.
+* Published content, metadata, categories and settings changes refresh affected page caches once per request.
+* Official unmodified Google G, readable platform names and transparent source links.
+* Offline importer validates receipts before writes, includes Trash in duplicate prevention, preserves category hierarchy and reports failures.
+
 
 = 0.3.0 =
 

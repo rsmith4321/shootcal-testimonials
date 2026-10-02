@@ -61,31 +61,31 @@ class Settings {
 			return;
 		}
 
-		if ( ! wp_verify_nonce( sanitize_key( $_POST['sct_settings_nonce'] ), self::NONCE ) ) {
+		if ( ! is_string( $_POST['sct_settings_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['sct_settings_nonce'] ) ), self::NONCE ) ) {
 			wp_die( esc_html__( 'Security check failed. Please try again.', 'shootcal-testimonials' ) );
 		}
-
 		if ( ! current_user_can( self::CAPABILITY ) ) {
 			wp_die( esc_html__( 'You do not have permission to change these settings.', 'shootcal-testimonials' ) );
 		}
-
-		Config::ensure_defaults();
-
-		Config::set( 'schema_enabled', ! empty( $_POST['schema_enabled'] ) );
-		Config::set( 'business_name', sanitize_text_field( wp_unslash( $_POST['business_name'] ?? '' ) ) );
-		Config::set( 'rating_as_of', sanitize_text_field( wp_unslash( $_POST['rating_as_of'] ?? '' ) ) );
-		Config::set( 'default_columns', Config::normalize_columns( $_POST['default_columns'] ?? 3 ) );
-		Config::set( 'default_count', max( 1, min( Shortcode::CEILING, (int) ( $_POST['default_count'] ?? 9 ) ) ) );
-		Config::set( 'default_more', isset( $_POST['default_more'] ) && 'show' === $_POST['default_more'] ? 'show' : 'hide' );
-
-		foreach ( array( 'show_photo', 'show_rating', 'show_date', 'show_category', 'show_source' ) as $flag ) {
-			Config::set( $flag, ! empty( $_POST[ $flag ] ) );
+		$current = get_option( OPTION_KEY, array() );
+		$current = is_array( $current ) ? $current : array();
+		$next = array_merge( Config::defaults(), $current );
+		$scalar = static function ( string $key, string $fallback = '' ): string {
+			return isset( $_POST[ $key ] ) && is_scalar( $_POST[ $key ] ) ? wp_unslash( (string) $_POST[ $key ] ) : $fallback;
+		};
+		$next['business_name'] = sanitize_text_field( $scalar( 'business_name' ) );
+		$next['rating_as_of'] = sanitize_text_field( $scalar( 'rating_as_of' ) );
+		$next['default_columns'] = Config::normalize_columns( $scalar( 'default_columns', '3' ) );
+		$next['default_count'] = max( 1, min( Shortcode::CEILING, (int) $scalar( 'default_count', '9' ) ) );
+		$next['default_more'] = 'show' === $scalar( 'default_more' ) ? 'show' : 'hide';
+		foreach ( array( 'schema_enabled', 'show_photo', 'show_rating', 'show_date', 'show_category', 'show_source', 'public_single_urls' ) as $flag ) {
+			$next[ $flag ] = '1' === $scalar( $flag );
 		}
-
-		Config::set( 'public_single_urls', ! empty( $_POST['public_single_urls'] ) );
-
-		// Permalinks depend on whether single testimonial URLs are public.
-		flush_rewrite_rules();
+		update_option( OPTION_KEY, $next, false );
+		if ( (bool) ( $current['public_single_urls'] ?? false ) !== $next['public_single_urls'] ) {
+			( new Post_Type() )->register_post_type();
+			flush_rewrite_rules( false );
+		}
 
 		wp_safe_redirect(
 			add_query_arg(

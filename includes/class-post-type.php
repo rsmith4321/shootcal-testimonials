@@ -57,7 +57,7 @@ class Post_Type {
 				'show_in_menu'   => true,
 				'menu_icon'      => 'dashicons-format-quote',
 				'menu_position'  => 26,
-				'supports'       => array( 'title', 'editor', 'thumbnail', 'revisions', 'excerpt' ),
+				'supports'       => array( 'title', 'editor', 'thumbnail', 'revisions', 'excerpt', 'custom-fields' ),
 				'has_archive'    => false,
 				'rewrite'        => false,
 				'capability_type' => 'post',

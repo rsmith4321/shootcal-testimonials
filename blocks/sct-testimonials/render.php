@@ -26,4 +26,5 @@ if ( ! class_exists( 'ShootCalTestimonials\Block' ) ) {
 
 $sct_attributes = isset( $attributes ) && is_array( $attributes ) ? $attributes : array();
 
+// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Block delegates to Shortcode, which escapes every field.
 echo \ShootCalTestimonials\Block::render_block( $sct_attributes );

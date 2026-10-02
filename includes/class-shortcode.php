@@ -124,7 +124,7 @@ class Shortcode {
 		// reveal. Without it, the initial count is the whole query and no card is hidden.
 		if ( 'show' === $more ) {
 			$requested = '' !== trim( (string) $atts['total'] ) ? (int) $atts['total'] : self::DEFAULT_TOTAL;
-			$total     = max( $count + 1, min( self::CEILING, $requested ) );
+			$total     = min( self::CEILING, max( $count, $requested ) );
 		} else {
 			$total = $count;
 		}
@@ -136,13 +136,19 @@ class Shortcode {
 			return '';
 		}
 
+		$instance = wp_unique_id( 'sct-list-' );
+		$rendered_posts = array();
 		$items   = '';
 		$dialogs = '';
 		$index   = 0;
 
 		foreach ( $posts as $post ) {
+			$rendered = $this->render_item( $post, $index >= $count, $lines, $instance );
+			if ( '' === $rendered['card'] ) {
+				continue;
+			}
 			++$index;
-			$rendered = $this->render_item( $post, $index > $count, $lines );
+			$rendered_posts[] = $post;
 			$items   .= $rendered['card'];
 			$dialogs .= $rendered['dialog'];
 		}
@@ -151,7 +157,7 @@ class Shortcode {
 		// outside each card so an ancestor transform or overflow cannot trap a modal.
 		$button = '';
 
-		if ( 'show' === $more && count( $posts ) > $count ) {
+		if ( 'show' === $more && count( $rendered_posts ) > $count ) {
 			$button = sprintf(
 				'<div class="sct-testimonials__more"><button type="button" class="sct-more" data-sct-more>%s</button></div>',
 				esc_html__( 'View more', 'shootcal-testimonials' )
@@ -167,7 +173,10 @@ class Shortcode {
 		 * @param \WP_Post[] $posts    Rendered testimonials.
 		 * @param bool       $has_more Whether View more is enabled for this instance.
 		 */
-		do_action( 'sct_rendered', $posts, '' !== $button );
+		if ( array() === $rendered_posts ) {
+			return '';
+		}
+		do_action( 'sct_rendered', $rendered_posts, '' !== $button );
 
 		return sprintf(
 			'<section class="sct-section sct-testimonials" style="--sct-lines:%1$d" data-sct-columns="%2$d" data-sct-initial="%3$d">%4$s<div class="sct-testimonials__grid sct-testimonials__grid--%2$d">%5$s</div>%6$s%7$s</section>',
@@ -211,7 +220,7 @@ class Shortcode {
 
 		// Read-only public filter. No state changes, so no nonce applies.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$raw = isset( $_GET[ self::QUERY_VAR ] ) ? sanitize_text_field( wp_unslash( $_GET[ self::QUERY_VAR ] ) ) : '';
+		$raw = isset( $_GET[ self::QUERY_VAR ] ) && is_string( $_GET[ self::QUERY_VAR ] ) ? sanitize_text_field( wp_unslash( $_GET[ self::QUERY_VAR ] ) ) : '';
 
 		if ( '' === trim( $raw ) ) {
 			return $attribute;
@@ -267,9 +276,12 @@ class Shortcode {
 		);
 
 		if ( 'rating' === $orderby ) {
-			$args['meta_key'] = META_PREFIX . 'rating';
+			$args['meta_query'] = array( 'relation' => 'OR',
+				'rated' => array( 'key' => META_PREFIX . 'rating', 'compare' => 'EXISTS', 'type' => 'NUMERIC' ),
+				array( 'key' => META_PREFIX . 'rating', 'compare' => 'NOT EXISTS' ),
+			);
 			$args['orderby']  = array(
-				'meta_value_num' => $order,
+				'rated' => $order,
 				'date'           => 'DESC',
 			);
 		} else {
@@ -328,7 +340,7 @@ class Shortcode {
 	 * @param int      $lines  Quote lines to clamp to.
 	 * @return array{card:string,dialog:string}
 	 */
-	private function render_item( \WP_Post $post, bool $hidden, int $lines ): array {
+	private function render_item( \WP_Post $post, bool $hidden, int $lines, string $instance ): array {
 		$quote  = $this->quote_text( $post );
 		$name   = get_the_title( $post );
 		$rating = Meta::normalize_rating( get_post_meta( $post->ID, META_PREFIX . 'rating', true ) );
@@ -342,11 +354,11 @@ class Shortcode {
 		}
 
 		$classes     = array( 'sct-testimonial' );
-		$date        = mysql2date( 'F j, Y', $post->post_date );
+		$date        = mysql2date( get_option( 'date_format', 'F j, Y' ), $post->post_date );
 		$media       = $this->render_media( $post, $name, $classes );
 		$stars       = ( $rating > 0 && Config::get( 'show_rating', true ) ) ? $this->render_rating( $rating ) : '';
 		$source_line = $this->render_source( $post, $source );
-		$dialog_id   = 'sct-dialog-' . $post->ID;
+		$dialog_id   = $instance . '-dialog-' . $post->ID;
 
 		if ( $hidden ) {
 			$classes[] = 'sct-testimonial--hidden';
@@ -358,6 +370,10 @@ class Shortcode {
 			$attribution .= '<span class="sct-testimonial__date">' . esc_html( $date ) . '</span>';
 		}
 
+		if ( Config::get( 'show_category', false ) ) {
+			$terms = get_the_terms( $post, TAXONOMY );
+			if ( is_array( $terms ) ) { $attribution .= '<span class="sct-testimonial__categories">' . esc_html( implode( ', ', wp_list_pluck( $terms, 'name' ) ) ) . '</span>'; }
+		}
 		$attribution .= '</figcaption>';
 
 		$card = sprintf(
@@ -499,8 +515,7 @@ class Shortcode {
 	 * other platform gets a plain text credit, so the plugin never renders a third-party
 	 * brand it holds no usage guidance for. No badge is drawn beside any of them:
 	 * Google's brand rules require the official, unaltered G and forbid a custom one, and
-	 * no official asset ships with this plugin. Text attribution alone is nominative and
-	 * compliant. Add a mark here only from Google's own brand resource.
+	 * the bundled gradient G is downloaded unmodified from Google's official brand resource.
 	 *
 	 * Stars are rendered in the card body, deliberately separate from this line, because
 	 * Google's brand rules forbid placing stars beside the Google name or logo.
@@ -514,7 +529,7 @@ class Shortcode {
 		}
 
 		$url = (string) get_post_meta( $post->ID, META_PREFIX . 'source_url', true );
-		$url = filter_var( $url, FILTER_VALIDATE_URL ) ? $url : '';
+		$url = esc_url_raw( $url, array( 'http', 'https' ) );
 
 		if ( 'google' === $source ) {
 			$label = __( 'Originally posted on Google', 'shootcal-testimonials' );
@@ -522,7 +537,7 @@ class Shortcode {
 			$label = sprintf(
 				/* translators: %s: platform name. */
 				__( 'Originally posted on %s', 'shootcal-testimonials' ),
-				ucfirst( $source )
+				array( 'theknot' => 'The Knot', 'weddingwire' => 'WeddingWire', 'zola' => 'Zola', 'yelp' => 'Yelp', 'facebook' => 'Facebook', 'other' => __( 'another website', 'shootcal-testimonials' ) )[ $source ] ?? ucfirst( $source )
 			);
 		}
 
@@ -532,7 +547,7 @@ class Shortcode {
 			$link = sprintf(
 				'<a class="sct-source__link" href="%1$s" rel="nofollow noopener external" target="_blank">%2$s<span class="screen-reader-text"> %3$s</span></a>',
 				esc_url( $url ),
-				esc_html__( 'View original review', 'shootcal-testimonials' ),
+				esc_html__( 'View review source', 'shootcal-testimonials' ),
 				esc_html__( '(opens in a new tab)', 'shootcal-testimonials' )
 			);
 		}
@@ -540,7 +555,7 @@ class Shortcode {
 		return sprintf(
 			'<p class="sct-source sct-source--%1$s"><span class="sct-source__label">%2$s</span>%3$s</p>',
 			esc_attr( $source ),
-			esc_html( $label ),
+			( 'google' === $source ? '<img class="sct-source__mark" src="' . esc_url( PLUGIN_URL . 'assets/google-g.png' ) . '" width="18" height="18" alt="" loading="lazy" />' : '' ) . esc_html( $label ),
 			$link
 		);
 	}
@@ -567,7 +582,8 @@ class Shortcode {
 		// Strip tags only. wp_strip_all_tags() with $remove_breaks collapses every run of
 		// whitespace to a single space, which would flatten the paragraph breaks the
 		// normalization below and the card's white-space: pre-line both depend on.
-		$text = wp_strip_all_tags( $text );
+		$text = preg_replace( '/<br\s*\/?\s*>|<\/(?:p|div|li|h[1-6])\s*>/i', "\n", $text ) ?? $text;
+		$text = html_entity_decode( wp_strip_all_tags( $text ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		$text = str_replace( array( "\r\n", "\r" ), "\n", $text );
 		$text = preg_replace( '/[ \t]+\n/', "\n", $text ) ?? $text;
 		$text = preg_replace( '/\n{3,}/', "\n\n", $text ) ?? $text;

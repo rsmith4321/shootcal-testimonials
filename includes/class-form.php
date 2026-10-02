@@ -195,7 +195,7 @@ class Form {
 	 * form posts to its own page rather than to a handler endpoint.
 	 */
 	public function handle_submission(): void {
-		if ( ! $this->has_input( self::NONCE_FIELD ) ) {
+		if ( 'POST' !== ( $_SERVER['REQUEST_METHOD'] ?? '' ) || ! $this->has_input( self::NONCE_FIELD ) ) {
 			return;
 		}
 
@@ -298,6 +298,8 @@ class Form {
 				__( 'Please write at least %d characters so there is something to publish.', 'shootcal-testimonials' ),
 				self::QUOTE_MIN
 			);
+		} elseif ( preg_match( '~(?:https?://|www\.)~i', $quote ) ) {
+			$this->errors['quote'] = __( 'Please leave web links out of your testimonial. You can email any links to us separately.', 'shootcal-testimonials' );
 		} elseif ( $quote_length > self::QUOTE_MAX ) {
 			// Rejected rather than trimmed. Cutting a client's words would publish a
 			// review they did not write.
@@ -333,7 +335,7 @@ class Form {
 	 */
 	private function insert( string $name, string $quote, int $rating, string $category, string $email ): int {
 		$post_id = wp_insert_post(
-			array(
+			wp_slash( array(
 				'post_type'      => POST_TYPE,
 				// Server-side values. Neither status nor author is read from the request.
 				'post_status'    => 'pending',
@@ -344,7 +346,7 @@ class Form {
 				'post_date_gmt'  => current_time( 'mysql', true ),
 				'comment_status' => 'closed',
 				'ping_status'    => 'closed',
-			),
+			) ),
 			true
 		);
 
@@ -416,8 +418,9 @@ class Form {
 			self::SHORTCODE
 		);
 
+		( new Assets() )->register_assets();
 		$this->used    = true;
-		$this->id_base = 'sct-form-' . ++$this->instances;
+		$this->id_base = wp_unique_id( 'sct-form-' );
 
 		// One slug only. If a comma-separated list is passed, the first entry preselects
 		// and the rest are ignored, because the control is a single select.
@@ -977,9 +980,9 @@ class Form {
 			return 0;
 		}
 
-		$rating = absint( $this->posted_text( self::FIELD_RATING ) );
+		$value = $this->posted_text( self::FIELD_RATING );
 
-		return ( $rating >= 1 && $rating <= 5 ) ? $rating : 0;
+		return preg_match( '/^[1-5]$/D', $value ) ? (int) $value : 0;
 	}
 
 	/**

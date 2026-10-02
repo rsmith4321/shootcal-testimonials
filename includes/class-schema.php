@@ -56,7 +56,7 @@ class Schema {
 	public function collect( array $posts ): void {
 		foreach ( $posts as $post ) {
 			if ( $post instanceof \WP_Post ) {
-				$this->rendered[] = $post;
+				$this->rendered[ $post->ID ] = $post;
 			}
 		}
 	}
@@ -83,6 +83,9 @@ class Schema {
 		$ratings = array();
 
 		foreach ( $this->rendered as $post ) {
+			if ( 'direct' !== Meta::normalize_source( get_post_meta( $post->ID, META_PREFIX . 'source', true ) ) ) {
+				continue;
+			}
 			$rating = Meta::normalize_rating( get_post_meta( $post->ID, META_PREFIX . 'rating', true ) );
 			$quote  = trim( wp_strip_all_tags( (string) $post->post_content, true ) );
 

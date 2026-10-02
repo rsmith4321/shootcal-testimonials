@@ -22,7 +22,7 @@ if ( defined( 'SCT_REMOVE_CONTENT' ) && true === constant( 'SCT_REMOVE_CONTENT' 
 	$posts = get_posts(
 		array(
 			'post_type'      => 'sct_testimonial',
-			'post_status'    => 'any',
+			'post_status'    => array( 'publish', 'pending', 'draft', 'private', 'future', 'trash' ),
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
 			'no_found_rows'  => true,
@@ -34,6 +34,7 @@ if ( defined( 'SCT_REMOVE_CONTENT' ) && true === constant( 'SCT_REMOVE_CONTENT' 
 		wp_delete_post( (int) $post_id, true );
 	}
 
+	if ( ! taxonomy_exists( 'sct_category' ) ) { register_taxonomy( 'sct_category', 'sct_testimonial' ); }
 	$terms = get_terms(
 		array(
 			'taxonomy'   => 'sct_category',

@@ -72,6 +72,15 @@ class Compatibility {
 		// Page-cache freshness: nginx-helper purges the testimonial itself on save, but
 		// not the pages rendering the library, so an approval would stay invisible.
 		add_action( 'transition_post_status', array( $this, 'purge_rendering_pages' ), 10, 3 );
+		add_action( 'before_delete_post', array( $this, 'post_deleted' ), 10, 2 );
+		add_action( 'edited_' . TAXONOMY, array( $this, 'schedule_purge' ) );
+		add_action( 'delete_' . TAXONOMY, array( $this, 'schedule_purge' ) );
+		add_action( 'added_post_meta', array( $this, 'meta_changed' ), 10, 4 );
+		add_action( 'updated_post_meta', array( $this, 'meta_changed' ), 10, 4 );
+		add_action( 'deleted_post_meta', array( $this, 'meta_changed' ), 10, 4 );
+		add_action( 'set_object_terms', array( $this, 'terms_changed' ), 10, 6 );
+		add_action( 'update_option_' . OPTION_KEY, array( $this, 'schedule_purge' ) );
+		add_action( 'shutdown', array( $this, 'flush_pending' ) );
 	}
 
 	/**
@@ -200,11 +209,23 @@ class Compatibility {
 			return;
 		}
 
-		$visible = array( 'publish', 'private' );
+		if ( 'publish' === $new_status || 'publish' === $old_status ) { $this->schedule_purge(); }
+	}
 
-		if ( in_array( (string) $new_status, $visible, true ) === in_array( (string) $old_status, $visible, true ) ) {
-			return;
-		}
+	public function post_deleted( $post_id, $post ): void {
+		if ( $post instanceof \WP_Post && POST_TYPE === $post->post_type && 'publish' === $post->post_status ) { $this->schedule_purge(); }
+	}
+	private bool $purge_pending = false;
+	public function schedule_purge(): void { $this->purge_pending = true; }
+	public function meta_changed( $meta_id, $post_id, $key, $value ): void {
+		if ( POST_TYPE === get_post_type( $post_id ) && 'publish' === get_post_status( $post_id ) && ( 0 === strpos( (string) $key, META_PREFIX ) || '_thumbnail_id' === $key ) ) { $this->schedule_purge(); }
+	}
+	public function terms_changed( $id, $terms, $tt_ids, $taxonomy, $append, $old_tt_ids ): void {
+		if ( TAXONOMY === $taxonomy && POST_TYPE === get_post_type( $id ) && 'publish' === get_post_status( $id ) ) { $this->schedule_purge(); }
+	}
+	public function flush_pending(): void {
+		if ( ! $this->purge_pending ) { return; }
+		$this->purge_pending = false;
 
 		foreach ( self::rendering_page_ids() as $id ) {
 			$url = get_permalink( $id );
@@ -217,6 +238,8 @@ class Compatibility {
 				( new \FastCGI_Purger() )->purge_url( $url, false );
 			}
 
+			if ( function_exists( 'rocket_clean_post' ) ) { rocket_clean_post( $id ); }
+			do_action( 'litespeed_purge_post', $id );
 			self::clear_used_css( $id );
 		}
 	}

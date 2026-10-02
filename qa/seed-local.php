@@ -17,6 +17,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit( 1 );
 }
 
+$host = wp_parse_url( home_url(), PHP_URL_HOST );
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI || ! in_array( $host, array( '127.0.0.1', 'localhost', '::1' ), true ) ) {
+	throw new RuntimeException( 'Synthetic seed is restricted to a localhost WP-CLI environment.' );
+}
 $report = array();
 
 /**
@@ -81,7 +85,9 @@ function sct_make_photo( string $path, array $palette ): bool {
 $previous = get_posts(
 	array(
 		'post_type'      => 'sct_testimonial',
-		'post_status'    => 'any',
+		'post_status'    => array( 'publish', 'pending', 'draft', 'private', 'trash' ),
+		'meta_key'       => '_sct_qa_seed',
+		'meta_value'     => '1',
 		'posts_per_page' => -1,
 		'fields'         => 'ids',
 	)
@@ -305,6 +311,7 @@ foreach ( $samples as $sample ) {
 		continue;
 	}
 
+	update_post_meta( $post_id, '_sct_qa_seed', '1' );
 	// WordPress replaces post_date when publishing a backdated draft, so restate it.
 	wp_update_post(
 		array(
@@ -353,6 +360,9 @@ $report['ids']          = $created;
 // The QA page.
 $existing_page = get_page_by_path( 'testimonial-qa' );
 
+if ( $existing_page instanceof WP_Post && '1' !== get_post_meta( $existing_page->ID, '_sct_qa_seed', true ) ) {
+	throw new RuntimeException( 'Refusing to replace an authored testimonial-qa page.' );
+}
 if ( $existing_page instanceof WP_Post ) {
 	wp_delete_post( $existing_page->ID, true );
 }
@@ -367,6 +377,8 @@ $page_id = wp_insert_post(
 	),
 	true
 );
+
+if ( ! is_wp_error( $page_id ) ) { update_post_meta( $page_id, '_sct_qa_seed', '1' ); }
 
 $report['page_id']  = is_wp_error( $page_id ) ? $page_id->get_error_message() : $page_id;
 $report['page_url'] = is_wp_error( $page_id ) ? '' : get_permalink( $page_id );

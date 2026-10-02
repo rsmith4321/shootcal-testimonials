@@ -89,7 +89,7 @@ class Meta {
 	 * @return array<string,array<string,mixed>>
 	 */
 	public function fields(): array {
-		return array(
+		$fields = array(
 			META_PREFIX . 'rating'                => array(
 				'type'          => 'integer',
 				'description'   => __( 'Star rating, 1 to 5.', 'shootcal-testimonials' ),
@@ -221,6 +221,26 @@ class Meta {
 				'auth_callback' => static fn(): bool => current_user_can( 'edit_posts' ),
 			),
 		);
+		foreach ( $fields as $key => &$args ) {
+			$args['auth_callback'] = static fn( $allowed, $meta_key, $post_id ): bool => current_user_can( 'edit_post', (int) $post_id );
+			$args['sanitize_callback'] = static fn( $value ) => self::sanitize_field( $key, $value );
+			if ( in_array( $key, array( 'sct_consent_note', 'sct_consent_recorded', 'sct_source_note', 'sct_alternates', 'sct_selection_reason', 'sct_date_provenance' ), true ) ) {
+				$args['show_in_rest'] = array( 'schema' => array( 'type' => 'string', 'context' => array( 'edit' ) ) );
+			}
+		}
+		unset( $args );
+		return $fields;
+
+	}
+
+	/** Sanitize editor and REST writes consistently without modifying quote text. */
+	public static function sanitize_field( string $key, $value ) {
+		if ( ! is_scalar( $value ) ) { return ''; }
+		if ( 'sct_rating' === $key ) { return self::normalize_rating( $value ); }
+		if ( 'sct_source' === $key ) { return self::normalize_source( $value ); }
+		if ( 'sct_source_lookup' === $key ) { return self::normalize_lookup( $value ); }
+		if ( in_array( $key, array( 'sct_source_url', 'sct_reviewer_profile_url' ), true ) ) { return esc_url_raw( (string) $value, array( 'http', 'https' ) ); }
+		return sanitize_textarea_field( (string) $value );
 	}
 
 	/**

@@ -3,7 +3,7 @@
  * Frontend assets.
  *
  * The stylesheet is enqueued only on requests that actually render the shortcode,
- * and the script only when View more is in use. No render-blocking output on pages
+ * and the script whenever review dialogs are in use. No render-blocking output on pages
  * that have no testimonials.
  *
  * @package ShootCalTestimonials
@@ -34,9 +34,33 @@ class Assets {
 	 * Hook registration.
 	 */
 	public function register(): void {
-		add_action( 'wp_enqueue_scripts', array( $this, 'register_assets' ) );
+		add_action( 'template_redirect', array( $this, 'protect_form_cache' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_known_content' ) );
 		add_action( 'sct_rendered', array( $this, 'note_usage' ), 10, 2 );
 		add_action( 'wp_footer', array( $this, 'enqueue' ), 1 );
+	}
+
+	/** Submission nonces and one-time notices must not be shared through page caches. */
+	public function protect_form_cache(): void {
+		$post = get_queried_object();
+		if ( $post instanceof \WP_Post && has_shortcode( $post->post_content, Form::SHORTCODE ) ) {
+			if ( ! defined( 'DONOTCACHEPAGE' ) ) { define( 'DONOTCACHEPAGE', true ); }
+			nocache_headers();
+		}
+	}
+
+	/** Enqueue before the head only when the current authored content needs these assets. */
+	public function enqueue_known_content(): void {
+		$post = get_post();
+		if ( ! $post instanceof \WP_Post ) { return; }
+		$content = $post->post_content;
+		if ( has_shortcode( $content, 'shootcal_testimonials' ) || has_shortcode( $content, Form::SHORTCODE ) || has_block( Block::NAME, $content ) ) {
+			$this->register_assets();
+			wp_enqueue_style( SLUG );
+			if ( has_shortcode( $content, 'shootcal_testimonials' ) || has_block( Block::NAME, $content ) || preg_match( '/mode=[\"\']dialog[\"\']/', $content ) ) {
+				wp_enqueue_script( SLUG );
+			}
+		}
 	}
 
 	/**
@@ -83,11 +107,12 @@ class Assets {
 	 * @param bool       $has_more Whether View more is enabled.
 	 */
 	public function note_usage( array $posts, bool $has_more = false ): void {
+		if ( array() !== $posts ) { $this->register_assets(); }
 		if ( array() !== $posts ) {
 			$this->used = true;
 		}
 
-		if ( $has_more ) {
+		if ( array() !== $posts ) {
 			$this->needs_script = true;
 		}
 	}

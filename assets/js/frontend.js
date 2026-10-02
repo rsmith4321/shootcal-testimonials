@@ -18,7 +18,8 @@
 	'use strict';
 
 	function columnsFor( section ) {
-		var columns = parseInt( section.getAttribute( 'data-sct-columns' ), 10 );
+		var grid = section.querySelector( '.sct-testimonials__grid' );
+		var columns = grid ? getComputedStyle( grid ).gridTemplateColumns.split( /\s+/ ).length : 1;
 		return columns > 0 ? columns : 3;
 	}
 
@@ -75,11 +76,13 @@
 
 		if ( dialog && typeof dialog.showModal === 'function' && ! dialog.open ) {
 			populateDialog( card, dialog );
+			dialog.sctReturnFocus = card.querySelector( '[data-sct-open]' );
 			dialog.showModal();
 		}
 	}
 
 	function wireDialog( dialog ) {
+		dialog.addEventListener( 'close', function () { if ( dialog.sctReturnFocus ) { dialog.sctReturnFocus.focus(); } } );
 		var close = dialog.querySelector( '[data-sct-close]' );
 
 		if ( close ) {
@@ -144,12 +147,13 @@
 				event.preventDefault();
 
 				if ( ! dialog.open ) {
+					dialog.sctReturnFocus = trigger;
 					dialog.showModal();
 				}
 
 				// The honeypot is the first input in the form but is off-screen and out of
 				// the tab order, so it must not receive the opening focus.
-				var first = dialog.querySelector( '.sct-form input:not( [tabindex="-1"] ), .sct-form select, .sct-form textarea' );
+				var first = dialog.querySelector( '.sct-form input:not( [tabindex="-1"] ):not( [type="hidden"] ), .sct-form select, .sct-form textarea' );
 
 				if ( first ) {
 					first.focus();
@@ -216,6 +220,9 @@
 		}
 
 		section.setAttribute( 'data-sct-ready', '1' );
+		if ( typeof HTMLDialogElement === 'undefined' || typeof HTMLDialogElement.prototype.showModal !== 'function' ) {
+			return;
+		}
 		section.classList.add( 'sct-js' );
 
 		Array.prototype.forEach.call( section.querySelectorAll( '.sct-testimonial' ), wireCard );

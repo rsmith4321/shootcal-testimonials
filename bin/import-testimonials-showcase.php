@@ -36,9 +36,11 @@
  * @package ShootCalTestimonials
  */
 
+// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fwrite, WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound -- WP-CLI eval-file tool scope and terminal report streams.
 declare( strict_types=1 );
 
-if ( ! defined( 'ABSPATH' ) ) {
+defined( 'ABSPATH' ) || exit;
+if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	fwrite( STDERR, "Must run inside WordPress.\n" );
 	exit( 1 );
 }
@@ -110,6 +112,17 @@ if ( '' !== $receipts_path && is_readable( $receipts_path ) ) {
 	}
 }
 
+if ( '' !== $receipts_path && ! is_array( $receipts ) ) {
+	fwrite( STDERR, "Receipt file is missing or invalid; no writes performed.\n" ); exit( 1 );
+}
+// Validate every receipt before creating any term or review.
+foreach ( $overrides as $legacy_key => $override ) {
+	if ( ! is_array( $override ) || ! ctype_digit( (string) $legacy_key ) ||
+		( isset( $override['source'] ) && ! in_array( $override['source'], $valid_sources, true ) ) ||
+		( isset( $override['lookup'] ) && ! in_array( $override['lookup'], $valid_lookups, true ) ) ) {
+		WP_CLI::error( 'Receipt has an invalid record override; no writes performed.' );
+	}
+}
 /* Meta carried across, legacy key to new key. */
 $meta_map = array(
 	'_aditional_info_rating'         => 'sct_rating',
@@ -161,9 +174,11 @@ $already  = array();
 $existing = get_posts(
 	array(
 		'post_type'      => $target_type,
-		'post_status'    => 'any',
+		'post_status'    => array( 'publish', 'pending', 'draft', 'private', 'future', 'trash' ),
 		'posts_per_page' => -1,
 		'fields'         => 'ids',
+		// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters -- Offline migration must index every language and status for idempotence.
+		'suppress_filters' => true,
 		'no_found_rows'  => true,
 	)
 );
@@ -194,6 +209,7 @@ $report['source_found'] = count( $source_posts );
 // Term map, built from the legacy taxonomy so names and slugs survive.
 $term_map     = array();
 $new_terms    = 0;
+$sct_new_term_ids = array();
 $legacy_terms = get_terms(
 	array(
 		'taxonomy'   => 'ttshowcase_groups',
@@ -216,18 +232,30 @@ if ( ! is_wp_error( $legacy_terms ) ) {
 			continue;
 		}
 
-		$created = wp_insert_term( $term->name, 'sct_category', array( 'slug' => $term->slug ) );
+		$created = wp_insert_term( $term->name, 'sct_category', array( 'slug' => $term->slug, 'description' => $term->description ) );
 
 		if ( is_wp_error( $created ) ) {
-			$term_map[ (int) $term->term_id ] = 0;
-			continue;
+			WP_CLI::error( 'Category creation failed: ' . $created->get_error_message() );
 		}
 
 		$term_map[ (int) $term->term_id ] = (int) $created['term_id'];
+		$sct_new_term_ids[] = (int) $created['term_id'];
 		++$new_terms;
 	}
 }
 
+if ( is_wp_error( $legacy_terms ) ) { WP_CLI::error( 'Unable to read legacy categories: ' . $legacy_terms->get_error_message() ); }
+// Apply parent links only to newly imported categories, leaving existing authored terms intact.
+if ( $apply ) {
+	foreach ( $legacy_terms as $term ) {
+		$mapped = $term_map[ (int) $term->term_id ] ?? 0;
+		$target = get_term( $mapped, 'sct_category' );
+		if ( in_array( $mapped, $sct_new_term_ids, true ) && $term->parent && ! is_wp_error( $target ) && $target && ! $target->parent ) {
+			$result = wp_update_term( $mapped, 'sct_category', array( 'parent' => $term_map[ (int) $term->parent ] ?? 0 ) );
+			if ( is_wp_error( $result ) ) { WP_CLI::error( 'Category hierarchy migration failed.' ); }
+		}
+	}
+}
 $report['terms_mapped'] = count( $term_map );
 $report['terms_new']    = $new_terms;
 
@@ -263,7 +291,7 @@ foreach ( $source_posts as $source ) {
 
 	// Testimonials Showcase keeps the display text in meta and leaves post_content empty.
 	if ( '' === $quote ) {
-		$quote = trim( wp_strip_all_tags( (string) $source->post_content, true ) );
+		$quote = trim( wp_strip_all_tags( (string) $source->post_content ) );
 	}
 
 	if ( '' === $name ) {
@@ -359,7 +387,7 @@ foreach ( $source_posts as $source ) {
 	}
 
 	$new_id = wp_insert_post(
-		array(
+		wp_slash( array(
 			'post_type'     => $target_type,
 			'post_title'    => $name,
 			'post_content'  => $quote,
@@ -369,40 +397,37 @@ foreach ( $source_posts as $source ) {
 			'post_date_gmt' => $source->post_date_gmt,
 			'post_author'   => (int) $source->post_author,
 			'edit_date'     => true,
-		),
+		) ),
 		true
 	);
 
 	if ( is_wp_error( $new_id ) ) {
-		$skipped[] = array(
-			'source_id' => $source_id,
-			'reason'    => 'insert failed: ' . $new_id->get_error_message(),
-		);
-		continue;
+		WP_CLI::error( 'Import failed for legacy review ' . $source_id . ': ' . $new_id->get_error_message() );
 	}
 
 	$new_id = (int) $new_id;
 
 	// Restate the date, because publishing a backdated post can reset it.
-	wp_update_post(
+	$date_result = wp_update_post(
 		array(
 			'ID'            => $new_id,
 			'post_date'     => $source->post_date,
 			'post_date_gmt' => $source->post_date_gmt,
 			'edit_date'     => true,
-		)
+		), true
 	);
+	if ( is_wp_error( $date_result ) ) { WP_CLI::error( 'Review created but date preservation failed for ' . $new_id ); }
 
 	update_post_meta( $new_id, 'sct_legacy_id', $source_id );
 	update_post_meta( $new_id, 'sct_source', $src );
 	update_post_meta( $new_id, 'sct_source_lookup', $lookup );
-	update_post_meta( $new_id, 'sct_source_note', $src_note );
+	update_post_meta( $new_id, 'sct_source_note', wp_slash( $src_note ) );
 
 	foreach ( $meta_map as $from => $to ) {
 		$value = get_post_meta( $source_id, $from, true );
 
 		if ( '' !== $value && null !== $value ) {
-			update_post_meta( $new_id, $to, $value );
+			update_post_meta( $new_id, $to, wp_slash( $value ) );
 		}
 	}
 
@@ -410,7 +435,7 @@ foreach ( $source_posts as $source ) {
 		$value = get_post_meta( $source_id, $from, true );
 
 		if ( '' !== $value && null !== $value ) {
-			update_post_meta( $new_id, $to, $value );
+			update_post_meta( $new_id, $to, wp_slash( $value ) );
 		}
 	}
 
@@ -431,7 +456,8 @@ foreach ( $source_posts as $source ) {
 		}
 
 		if ( array() !== $target_terms ) {
-			wp_set_object_terms( $new_id, $target_terms, 'sct_category' );
+			$assigned = wp_set_object_terms( $new_id, $target_terms, 'sct_category' );
+			if ( is_wp_error( $assigned ) ) { WP_CLI::error( 'Review imported but category assignment failed for ' . $new_id ); }
 		}
 	}
 
@@ -472,16 +498,18 @@ if ( $apply ) {
 
 /*
  * Post-write audit. Re-reads every imported record rather than trusting the in-memory
- * tables, so the receipt reflects what is actually stored.
+ * tables, so the receipt reflects what is actually stored. Owner-authored reviews
+ * without a legacy identity are outside this migration audit.
  */
 if ( $apply ) {
 	$audit_ids = get_posts(
 		array(
 			'post_type'      => $target_type,
-			'post_status'    => 'any',
+			'post_status'    => array( 'publish', 'pending', 'draft', 'private', 'future', 'trash' ),
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
 			'no_found_rows'  => true,
+			'meta_key'       => 'sct_legacy_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Offline migration identity audit.
 		)
 	);
 

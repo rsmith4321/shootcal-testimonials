@@ -4,10 +4,11 @@ vendor/
 *.zip
 dist/
 *.log
-.git/
+.git
 .gitignore
 .distignore
 AGENTS.md
 tests/
 qa/
 tools/
+bin/build-zip.sh

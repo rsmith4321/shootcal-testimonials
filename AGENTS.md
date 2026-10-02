@@ -21,9 +21,8 @@ The legacy plugin does it differently: it stores the display quote in
 `_aditional_info_short_testimonial` (one d, intentional typo) and leaves `post_content`
 empty. The importer maps that across.
 
-**Reviewer email and private owner notes are never registered as meta.** That is a
-structural privacy decision, not an oversight: unregistered keys cannot be reached through
-the REST API, so no mobile or headless consumer can leak them. Do not add them back.
+**Reviewer email is never registered as meta.** Private consent and research annotations
+are restricted to authorized REST edit context. Keep both privacy boundaries intact.
 
 ## Design constraints
 
@@ -35,8 +34,8 @@ the REST API, so no mobile or headless consumer can leak them. Do not add them b
   reviews from other websites, with manual action as the stated consequence. The toggle
   exists for directory-style sites reviewing other businesses. Do not flip the default.
 - **Google branding.** Official G or wordmark, unaltered, no custom badge, and never stars
-  beside the Google name or logo. The inline `google_mark()` SVG is placeholder geometry
-  and must be replaced with the official asset before this ships to other users.
+  beside the Google name or logo. The packaged `assets/google-g.png` is the official unmodified Google G asset.
+  Preserve its proportions and clear space.
 - **Show an "as of" date** whenever an overall rating or review count is displayed. The
   aggregate is only emitted when `rating_as_of` is set.
 - **Client wording stays verbatim.** Never rewrite a review, and never strip em dashes from
@@ -49,22 +48,15 @@ the REST API, so no mobile or headless consumer can leak them. Do not add them b
 
 ## Parity status with ShootCal Websites
 
-The ShootCal `Testimonials` block in `shootcal-galleries/src/StudioWebsite.php` supports
-`eyebrow`, `heading`, `intro`, `columns` (1 to 3) and one to nine `items` of
-`{quote, attribution, assetId}`. It has **no rating, date, source platform, consent field
-or lightbox**.
+As of the October 2 candidate, ShootCal Websites adds optional rating, date, source
+platform/HTTPS link and full-review dialogs. Existing documents retain their previous
+shape and defaults. The isolated Galleries candidate is coordinated with the ShootCal
+Refactor chat; integration, staging and production verification remain owned by that chat.
+Do not call parity shipped until that release and ordinary Free-account acceptance pass.
 
-Accepted platform variations, recorded rather than hidden:
-
-- Column ceiling is 1 to 3 on both. Matching.
-- Item ceiling differs: nine inline items in ShootCal against sixty rendered posts here.
-  That is a storage consequence, since ShootCal authors quotes inside the page document.
-- The dialog is WordPress-only for now. **Open phase 2 item: extend the ShootCal block with
-  rating, date, source and a full-review dialog, or obtain Ryan's direction for the
-  difference.** Do not treat this as closed.
-
-Phase 2 is blocked on concurrent Codex work in `shootcal-galleries`. Do not edit that
-repository without a coordination window.
+Columns remain 1 to 3 on both products. ShootCal stores up to nine inline items, while
+WordPress renders up to sixty library posts. This accepted storage difference is retained.
+View more and dialogs read existing page content without visitor-triggered provider calls.
 
 ## Release discipline
 
