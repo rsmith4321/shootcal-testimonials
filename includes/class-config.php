@@ -44,7 +44,9 @@ class Config {
 			'default_more'      => 'hide',
 
 			'show_photo'        => true,
-			'show_rating'       => true,
+			// Off by default: a row of stars on a page of your own reviews reads as
+			// spammy (Ryan, 2026-10-02). Opt in per site under Testimonial Settings.
+			'show_rating'       => false,
 			'show_date'         => true,
 			'show_category'     => false,
 			'show_source'       => true,

@@ -4,7 +4,7 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,7 +48,7 @@ Or the bundled Gutenberg block, which is dynamic and renders through exactly the
 
 **Source attribution**
 
-Only Google-sourced testimonials get a brand mark and the "Originally posted on Google" label. Other platforms get a plain text credit, so the plugin never renders a third-party brand it holds no usage guidance for. Stars are rendered in the card body, deliberately separate from the credit line, because Google's brand rules forbid placing stars beside the Google name or logo.
+Only Google-sourced testimonials get a brand mark and the "Originally posted on Google" label. Other platforms get a plain text credit, so the plugin never renders a third-party brand it holds no usage guidance for. The star row is off by default and opt-in under Testimonial Settings, because a page of your own reviews covered in stars reads as spammy. When enabled, stars are rendered in the card body, deliberately separate from the credit line, because Google's brand rules forbid placing stars beside the Google name or logo.
 
 **Review structured data is off by default, on purpose**
 
@@ -118,6 +118,10 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 Sixty per list. With View more enabled the default total held behind the button is twenty four. Both are page-weight guards rather than design constraints.
 
 == Changelog ==
+
+= 0.2.1 =
+
+* Change: the star rating row is now off by default. A wall of stars on a page of your own reviews reads as spammy, and Google's rules give a self-serving star row no rich-result upside anyway. Enable it per site under Testimonial Settings, "Shown on each card".
 
 = 0.2.0 =
 

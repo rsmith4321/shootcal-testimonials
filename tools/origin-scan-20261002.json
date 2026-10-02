@@ -1,0 +1,1295 @@
+{
+ "checked_at": "2026-10-02T17:05:00Z",
+ "site": "www.ryansmithphotography.com",
+ "scope": "All 242 non-trash sct_testimonial records; origin lookup only. No testimonial text, photos, dates, titles, terms, media, ttshowcase records, protected pages, nginx or PHP config were changed.",
+ "method": {
+  "google": "Full business review list read signed-in from the Google Business Profile reviews frame (183 reviews) by incremental scroll of div.GNlv8d with accumulate+dedup and \"More Reviews\" pagination. Local match: normalized reviewer name equal AND token-set similarity >= 0.9, OR review-opening alignment (30 chars after stripping star ligature and date prefix) AND similarity >= 0.9. Independently cross-checked against Codex receipt receipts/codex-quick-google-matches-20261002.json (19 confirmed, all reproduced).",
+  "own_site": "Anonymous fetches of every _aditional_info_url hint plus a server-side sweep of all approved comments and all published post bodies for verbatim quote text.",
+  "other_platforms": "Fresh anonymous probes 2026-10-02: weddingwire 403, theknot 403, facebook login-walled, instagram unreadable without login, zola 200 but no record hint pointed there. Blocked platforms are never guessed."
+ },
+ "policy_addendum": [
+  "sct_source_lookup uses exactly matched / not-found / blocked. not-found means scanned and nothing located, and per Ryan 2026-10-02 those records are marked sct_source=direct (submitted directly).",
+  "_aditional_info_url is a client-supplied link field and is never source evidence by itself; it only directs where to look.",
+  "A text match under a different reviewer name is never auto-assigned. 88840 is held: a Google review by \"Sam\" carries its exact text; awaiting Ryan.",
+  "Authored typos stay authored: 88862 stored surname Kwiecinki vs Google Kwiecinski; matched on distinctive text, not renamed.",
+  "Prior first-party evidence wins when the scan cannot re-derive it: 88544 keeps its goo.gl deep-link corroboration, 88618 Instagram hint is superseded by a direct corpus Google match."
+ ],
+ "tallies": {
+  "direct|not-found": 122,
+  "google|matched": 117,
+  "direct|matched": 3
+ },
+ "per_record": [
+  {
+   "id": 88420,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88422,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88424,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88426,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88428,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88430,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88432,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88434,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88436,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88438,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88440,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88442,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88444,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88446,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88448,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88450,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88452,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88454,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88456,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88458,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88460,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88462,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88464,
+   "source": "direct",
+   "lookup": "matched"
+  },
+  {
+   "id": 88466,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88468,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88470,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88472,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88474,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88476,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88478,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88480,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88482,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88484,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88486,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88488,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88490,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88492,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88494,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88496,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88498,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88500,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88502,
+   "source": "direct",
+   "lookup": "matched"
+  },
+  {
+   "id": 88504,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88506,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88508,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88510,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88512,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88514,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88516,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88518,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88520,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88522,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88524,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88526,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88528,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88530,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88532,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88534,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88536,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88538,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88540,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88542,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88544,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88546,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88548,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88550,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88552,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88554,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88556,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88558,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88560,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88562,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88564,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88566,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88568,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88570,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88572,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88574,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88576,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88578,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88580,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88582,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88584,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88586,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88588,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88590,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88592,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88594,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88596,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88598,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88600,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88602,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88604,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88606,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88608,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88610,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88612,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88614,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88616,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88618,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88620,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88622,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88624,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88626,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88628,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88630,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88632,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88634,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88636,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88638,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88640,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88642,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88644,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88646,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88648,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88650,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88652,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88654,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88656,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88658,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88660,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88662,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88664,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88666,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88668,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88670,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88672,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88674,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88676,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88678,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88680,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88682,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88684,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88686,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88688,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88690,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88692,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88694,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88696,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88698,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88700,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88702,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88704,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88706,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88708,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88710,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88712,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88714,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88716,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88718,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88720,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88722,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88724,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88726,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88728,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88730,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88732,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88734,
+   "source": "direct",
+   "lookup": "matched"
+  },
+  {
+   "id": 88736,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88738,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88740,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88742,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88744,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88746,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88748,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88750,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88752,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88754,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88756,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88758,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88760,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88762,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88764,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88766,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88768,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88770,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88772,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88774,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88776,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88778,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88780,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88782,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88784,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88786,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88788,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88790,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88792,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88794,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88796,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88798,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88800,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88802,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88804,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88806,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88808,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88810,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88812,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88814,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88816,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88818,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88820,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88822,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88824,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88826,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88828,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88830,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88832,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88834,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88836,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88838,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88840,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88842,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88844,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88846,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88848,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88850,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88852,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88854,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88856,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88858,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88860,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88862,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88864,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88866,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88868,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88870,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88872,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88874,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88876,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88878,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88880,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88882,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88884,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88886,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88888,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88890,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88892,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88894,
+   "source": "direct",
+   "lookup": "not-found"
+  },
+  {
+   "id": 88896,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88898,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88900,
+   "source": "google",
+   "lookup": "matched"
+  },
+  {
+   "id": 88902,
+   "source": "google",
+   "lookup": "matched"
+  }
+ ],
+ "special_cases": {
+  "google_matched_own_site_corroboration": [
+   88544
+  ],
+  "instagram_hint_superseded": [
+   88618
+  ],
+  "own_site_matched": {
+   "88464": "comment 785 on post 4994",
+   "88502": "verbatim in published post body",
+   "88734": "verbatim in published post body"
+  },
+  "held_for_ryan": {
+   "88840": "Google review by \"Sam\" has identical text under a different name; left direct|not-found until Ryan decides."
+  },
+  "surname_typo_kept": {
+   "88862": "Kwiecinki stored vs Kwiecinski on Google"
+  }
+ },
+ "verification": {
+  "backup": "/home/ryansmithphotography/backups/sct-trial-20261001/pre-origin-scan/meta-backup.json (242 records, mode 0600, all sct_* meta plus post_content sha256)",
+  "apply_result": {
+   "changed": 242,
+   "same": 0,
+   "missing": 0
+  },
+  "post_apply": {
+   "sct_count": 242,
+   "content_mismatch": [],
+   "tally": {
+    "direct|not-found": 122,
+    "google|matched": 117,
+    "direct|matched": 3
+   },
+   "notes_empty": 0,
+   "ttshowcase_publish": 241,
+   "ttshowcase_any": 242
+  },
+  "integrity": "backup-integrity verify: legacy count/sha/terms, media and all five protected pages match baseline. plugins_sha256 and plugin_count differ by design: the 03:48 baseline was captured while the trial plugin directory was momentarily absent; it was reinstalled 04:23 and is meant to be present.",
+  "anonymous_probe": {
+   "base": {
+    "status": 200,
+    "cards": 33,
+    "google_labels": 50,
+    "stars": 0,
+    "noindex": true
+   },
+   "family": {
+    "status": 200,
+    "cards": 33,
+    "google_labels": 58,
+    "stars": 0,
+    "noindex": true
+   }
+  }
+ },
+ "open_items": [
+  "Ryan to decide 88840 (Sam vs Nicolina Scibelli identical text).",
+  "Google reviews with no testimonial counterpart remain unmapped by design: Anna Smith, Alyssa Wojcik, Stephanie Salvas, Heather Williams, Emily A, Amanda Lyn.",
+  "Ryan plans to request direct client reviews going forward; new submissions arrive through the moderated form as direct|not-found until researched."
+ ]
+}

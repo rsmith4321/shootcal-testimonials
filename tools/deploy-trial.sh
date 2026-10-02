@@ -1,5 +1,5 @@
 #!/bin/bash
-# Deploy and verify the ShootCal Testimonials 0.2.0 trial on www.ryansmithphotography.com.
+# Deploy and verify the ShootCal Testimonials 0.2.1 trial on www.ryansmithphotography.com.
 #
 # Runs ON THE SERVER as the ryansmith user (passwordless sudo). Two phases, so the
 # destructive step is always a deliberate second command after the dry run is read:

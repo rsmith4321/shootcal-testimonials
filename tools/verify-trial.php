@@ -300,7 +300,7 @@ if ( '' !== $trial_slug ) {
 
 $out['verdicts'] = array(
 	'plugin_active'          => (bool) $out['plugin']['active'],
-	'plugin_version_0_2_0'   => '0.2.0' === $out['plugin']['version'],
+	'plugin_version_0_2_1'   => '0.2.1' === $out['plugin']['version'],
 	'legacy_still_active'    => (bool) ( $out['counts']['ttshowcase_published'] > 0 ),
 	'provenance_complete'    => (bool) $out['provenance']['complete'],
 	'block_registered'       => (bool) $out['block']['registered'],
