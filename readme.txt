@@ -4,7 +4,7 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.2.1
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,7 +44,7 @@ Or the bundled Gutenberg block, which is dynamic and renders through exactly the
 
 **Public submissions**
 
-`[shootcal_testimonial_form]` renders an accessible form that creates a **pending** testimonial. Nothing goes live until an editor publishes it. Submissions are protected by a nonce, a honeypot field, and a per-IP cooldown, and every input is sanitized server side. The form grants no capability, never trusts the client for post status or author, and makes no outbound request.
+`[shootcal_testimonial_form]` renders an accessible form that creates a **pending** testimonial. Nothing goes live until an editor publishes it. Submissions are protected by a nonce, a honeypot field, and a per-IP cooldown, and every input is sanitized server side. The form grants no capability, never trusts the client for post status or author, and makes no outbound request. Add `mode="dialog"` to render a button instead, opening the same form in a modal dialog; `button_label` names that button. With script disabled the button is a plain link to the form rendered in place, and validation failures or a waiting confirmation always render in place too, so the dialog never hides anything the submitter needs to read.
 
 **Source attribution**
 
@@ -118,6 +118,12 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 Sixty per list. With View more enabled the default total held behind the button is twenty four. Both are page-weight guards rather than design constraints.
 
 == Changelog ==
+
+= 0.3.0 =
+
+* New: `mode="dialog"` on `[shootcal_testimonial_form]`. The shortcode renders a button that opens the same form in a native modal dialog, reusing the review dialog's chrome, close button and backdrop handling. `button_label` sets the button text.
+* New: the dialog trigger is a real link to `?sct_form_open=1`, the no-script rendering of the form in place, and validation failures or a waiting confirmation also render in place, so the modal can never hide content a submitter needs to read.
+* Change: pages rendering a dialog-mode form now load the front-end script even when no testimonial list is present; previously only lists with View more requested it.
 
 = 0.2.1 =
 

@@ -9,6 +9,7 @@
  *    button, including a click on the backdrop.
  * 3. Reveal one row at a time for View more, with focus moved to the first newly
  *    revealed card and a live-region announcement.
+ * 4. Open a dialog-mode submission form from its trigger button.
  *
  * No request is made anywhere in this file. A visitor click cannot trigger a database
  * query or a call to a review provider.
@@ -119,6 +120,44 @@
 		} );
 	}
 
+	/**
+	 * Open dialog-mode submission forms from their trigger.
+	 *
+	 * The trigger is a plain link to the no-script rendering of the same form, so
+	 * preventing the default only upgrades a navigation that already works into a modal.
+	 * Close button and backdrop come from wireDialog, shared with the review dialogs.
+	 */
+	function wireFormDialogs() {
+		Array.prototype.forEach.call( document.querySelectorAll( '[data-sct-form-trigger]' ), function ( trigger ) {
+			var dialog = document.getElementById( trigger.getAttribute( 'data-sct-form-trigger' ) );
+
+			if ( ! dialog || typeof dialog.showModal !== 'function' ) {
+				return;
+			}
+
+			if ( ! dialog.getAttribute( 'data-sct-wired' ) ) {
+				dialog.setAttribute( 'data-sct-wired', '1' );
+				wireDialog( dialog );
+			}
+
+			trigger.addEventListener( 'click', function ( event ) {
+				event.preventDefault();
+
+				if ( ! dialog.open ) {
+					dialog.showModal();
+				}
+
+				// The honeypot is the first input in the form but is off-screen and out of
+				// the tab order, so it must not receive the opening focus.
+				var first = dialog.querySelector( '.sct-form input:not( [tabindex="-1"] ), .sct-form select, .sct-form textarea' );
+
+				if ( first ) {
+					first.focus();
+				}
+			} );
+		} );
+	}
+
 	function wireMore( section ) {
 		var button = section.querySelector( '[data-sct-more]' );
 
@@ -197,6 +236,10 @@
 	}
 
 	function boot() {
+		// Form dialogs live on pages with or without a testimonial list, so they are
+		// wired independently of the section walk below.
+		wireFormDialogs();
+
 		Array.prototype.forEach.call( document.querySelectorAll( '.sct-testimonials' ), init );
 	}
 

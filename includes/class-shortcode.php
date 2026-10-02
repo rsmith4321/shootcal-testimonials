@@ -468,7 +468,11 @@ class Shortcode {
 			'<dialog class="sct-dialog" id="%1$s" data-sct-dialog aria-labelledby="%1$s-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="%2$s">&#215;</button><div class="sct-dialog__media" data-sct-dialog-media></div><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="%1$s-title">%3$s</h3>%4$s<blockquote class="sct-dialog__quote" data-sct-dialog-quote></blockquote>%5$s%6$s</div></div></dialog>',
 			esc_attr( $id ),
 			esc_attr__( 'Close', 'shootcal-testimonials' ),
-			esc_html( sprintf( /* translators: %s: reviewer name. */ __( '%s review', 'shootcal-testimonials' ), $name ) ),
+			sprintf(
+				'<span class="sct-dialog__heading-label">%1$s</span><span class="sct-dialog__heading-name">%2$s</span>',
+				esc_html__( 'Review', 'shootcal-testimonials' ),
+				esc_html( $name )
+			),
 			$stars,
 			$by,
 			$source_line

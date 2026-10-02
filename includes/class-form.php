@@ -68,6 +68,14 @@ class Form {
 	public const NOTICE_QUERY_VAR = 'sct_form';
 
 	/**
+	 * Query parameter that renders a dialog-mode form in place.
+	 *
+	 * The dialog trigger links here, so with script disabled the same click lands on the
+	 * form rendered inline instead of a dialog that would never open.
+	 */
+	public const OPEN_QUERY_VAR = 'sct_form_open';
+
+	/**
 	 * Private meta key for the submitter's email.
 	 *
 	 * Leading underscore and, more importantly, absent from Meta::fields(). It is never
@@ -149,6 +157,14 @@ class Form {
 	 * Forms rendered during this request.
 	 */
 	private int $instances = 0;
+
+	/**
+	 * Whether a dialog-mode form rendered during this request.
+	 *
+	 * The dialog needs frontend.js to open; a page carrying only a form never asks Assets
+	 * for it, so this flag is what enqueue() keys the script off.
+	 */
+	private bool $dialog_used = false;
 
 	/**
 	 * Hook registration.
@@ -379,7 +395,9 @@ class Form {
 	 * Render the shortcode.
 	 *
 	 * Attributes: category preselects one sct_category slug, redirect sends the submitter
-	 * somewhere other than the form page after a successful post.
+	 * somewhere other than the form page after a successful post, mode chooses the form in
+	 * place (page) or a button that opens it in a dialog (dialog), and button_label names
+	 * that button.
 	 *
 	 * The confirmation is read by this shortcode, so a redirect target needs the form on
 	 * it for the message to be visible.
@@ -389,8 +407,10 @@ class Form {
 	public function render( $atts = array() ): string {
 		$atts = shortcode_atts(
 			array(
-				'category' => '',
-				'redirect' => '',
+				'category'     => '',
+				'redirect'     => '',
+				'mode'         => 'page',
+				'button_label' => '',
 			),
 			$atts,
 			self::SHORTCODE
@@ -410,30 +430,91 @@ class Form {
 		$redirect_attr = trim( (string) $atts['redirect'] );
 		$redirect      = '' !== $redirect_attr ? (string) wp_validate_redirect( $redirect_attr, '' ) : '';
 
-		$out = '<div class="sct-form-wrap">';
-		$out .= $this->render_notice();
-		$out .= $this->render_error_summary();
-		$out .= sprintf(
+		// Read before deciding how to render: the notice consumes its one-time token, so
+		// it can only be fetched once, and whether it said anything is what tells us a
+		// confirmation is waiting for this page load.
+		$notice = $this->render_notice();
+		$errors = $this->render_error_summary();
+
+		$form  = '<div class="sct-form-wrap">';
+		$form .= $notice;
+		$form .= $errors;
+		$form .= sprintf(
 			'<form class="sct-form" method="post" aria-label="%s">',
 			esc_attr__( 'Submit a testimonial', 'shootcal-testimonials' )
 		);
-		$out .= wp_nonce_field( self::NONCE_ACTION, self::NONCE_FIELD, true, false );
-		$out .= sprintf(
+		$form .= wp_nonce_field( self::NONCE_ACTION, self::NONCE_FIELD, true, false );
+		$form .= sprintf(
 			'<input type="hidden" name="%s" value="%s" />',
 			esc_attr( self::FIELD_REDIRECT ),
 			esc_attr( $redirect )
 		);
-		$out .= $this->render_honeypot();
-		$out .= $this->render_name();
-		$out .= $this->render_quote();
-		$out .= $this->render_rating();
-		$out .= $this->render_category( $preselect );
-		$out .= $this->render_email();
-		$out .= $this->render_submit();
-		$out .= '</form>';
-		$out .= '</div>';
+		$form .= $this->render_honeypot();
+		$form .= $this->render_name();
+		$form .= $this->render_quote();
+		$form .= $this->render_rating();
+		$form .= $this->render_category( $preselect );
+		$form .= $this->render_email();
+		$form .= $this->render_submit();
+		$form .= '</form>';
+		$form .= '</div>';
 
-		return $out;
+		// A dialog that hides what the visitor needs to read is worse than no dialog, so
+		// validation failures, a waiting confirmation and the no-script open parameter all
+		// render the form in place.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only open flag; nothing acts on it beyond choosing markup.
+		$inline = 'dialog' !== $atts['mode']
+			|| array() !== $this->errors
+			|| '' !== $notice
+			|| isset( $_GET[ self::OPEN_QUERY_VAR ] );
+
+		if ( $inline ) {
+			return $form;
+		}
+
+		$this->dialog_used = true;
+
+		return $this->render_trigger( (string) $atts['button_label'] ) . $this->render_dialog( $form );
+	}
+
+	/**
+	 * The button that opens a dialog-mode form.
+	 *
+	 * A real link to the no-script open parameter with the dialog id as fragment, so the
+	 * form stays reachable with script disabled and the dialog is an enhancement over a
+	 * path that already works.
+	 *
+	 * @param string $label Label from the shortcode attribute, empty for the default.
+	 */
+	private function render_trigger( string $label ): string {
+		$text = trim( $label );
+		$text = '' !== $text ? $text : __( 'Submit a testimonial', 'shootcal-testimonials' );
+
+		return sprintf(
+			'<p class="sct-form-trigger-wrap"><a class="sct-form-trigger" href="%1$s#%2$s" data-sct-form-trigger="%2$s">%3$s</a></p>',
+			esc_url( add_query_arg( self::OPEN_QUERY_VAR, '1' ) ),
+			esc_attr( $this->id_base . '-dialog' ),
+			esc_html( $text )
+		);
+	}
+
+	/**
+	 * Wrap a rendered form in the shared dialog chrome.
+	 *
+	 * Reuses the testimonial dialog classes so one modal design covers both, with the
+	 * close button and backdrop handling frontend.js already wires for [data-sct-close].
+	 *
+	 * @param string $form The form wrap markup.
+	 */
+	private function render_dialog( string $form ): string {
+		return sprintf(
+			'<dialog id="%1$s" class="sct-dialog sct-dialog--form" aria-labelledby="%2$s"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="%3$s">&#215;</button><div class="sct-dialog__content"><h2 class="sct-dialog__heading" id="%2$s">%4$s</h2>%5$s</div></div></dialog>',
+			esc_attr( $this->id_base . '-dialog' ),
+			esc_attr( $this->id_base . '-dialog-title' ),
+			esc_attr__( 'Close', 'shootcal-testimonials' ),
+			esc_html__( 'Submit a testimonial', 'shootcal-testimonials' ),
+			$form
+		);
 	}
 
 	/**
@@ -943,5 +1024,16 @@ class Form {
 		}
 
 		wp_enqueue_style( SLUG );
+
+		// A dialog-mode form is the only form output that cannot work without the script.
+		// Pages that also render a list with View more already have it from Assets, and
+		// enqueuing twice is a no-op, so this only covers form-only pages.
+		if ( $this->dialog_used ) {
+			if ( ! wp_script_is( SLUG, 'registered' ) && ! wp_script_is( SLUG, 'enqueued' ) && ! wp_script_is( SLUG, 'done' ) ) {
+				wp_register_script( SLUG, PLUGIN_URL . 'assets/js/frontend.js', array(), VERSION, true );
+			}
+
+			wp_enqueue_script( SLUG );
+		}
 	}
 }
