@@ -772,3 +772,53 @@
 .sct-testimonial__categories { color: var(--sct-muted); font-size: .75rem; }
 .sct-js .sct-testimonial__open { min-height: 44px; }
 @media (forced-colors: active) { .sct-dialog__close:focus-visible { outline: 2px solid ButtonText; } }
+
+/* Keep review surfaces light even when the surrounding theme uses dark mode.
+   The figure reset above must not remove a card's own background. Scope the
+   overrides to plugin surfaces so page headings retain the theme's contrast. */
+.sct-testimonials .sct-testimonial,
+.sct-dialog,
+.sct-form-wrap .sct-form {
+	color-scheme: only light;
+	background: #fff !important;
+	color: #23292f !important;
+}
+.sct-testimonials .sct-testimonial__name,
+.sct-testimonials .sct-testimonial__quote,
+.sct-dialog .sct-dialog__heading,
+.sct-dialog .sct-dialog__heading-name,
+.sct-dialog .sct-dialog__quote,
+.sct-dialog .sct-dialog__name,
+.sct-form .sct-form__label {
+	color: #23292f !important;
+}
+.sct-testimonials .sct-testimonial__date,
+.sct-testimonials .sct-source,
+.sct-dialog .sct-dialog__date,
+.sct-dialog .sct-dialog__heading-label,
+.sct-dialog .sct-source,
+.sct-form .sct-form__help,
+.sct-form .sct-form__note {
+	color: #5d6672 !important;
+}
+.sct-testimonials .sct-source__link,
+.sct-dialog .sct-source__link { color: #475569 !important; }
+.sct-testimonials .sct-testimonial__open {
+	background: #f8fafc !important;
+	color: #475569 !important;
+}
+.sct-more,
+.sct-form-trigger,
+.sct-form__submit,
+.sct-form input[type="text"],
+.sct-form input[type="email"],
+.sct-form select,
+.sct-form textarea {
+	color-scheme: only light;
+	background: #fff !important;
+	color: #23292f !important;
+}
+.sct-form input::placeholder,
+.sct-form textarea::placeholder { color: #5d6672; opacity: 1; }
+.sct-testimonials__intro,
+.sct-testimonials__eyebrow { color: inherit; }
