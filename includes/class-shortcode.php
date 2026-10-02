@@ -555,7 +555,7 @@ class Shortcode {
 		return sprintf(
 			'<p class="sct-source sct-source--%1$s"><span class="sct-source__label">%2$s</span>%3$s</p>',
 			esc_attr( $source ),
-			( 'google' === $source ? '<img class="sct-source__mark" src="' . esc_url( PLUGIN_URL . 'assets/google-g.png' ) . '" width="18" height="18" alt="" loading="lazy" />' : '' ) . esc_html( $label ),
+			( 'google' === $source ? '<img class="sct-source__mark" src="' . esc_url( PLUGIN_URL . 'assets/google-g.svg' ) . '" width="18" height="18" alt="" loading="lazy" />' : '' ) . esc_html( $label ),
 			$link
 		);
 	}

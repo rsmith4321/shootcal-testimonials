@@ -4,7 +4,7 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.4.0
+Stable tag: 0.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,7 @@ ShootCal Testimonials keeps your client reviews in WordPress itself rather than 
 
 * Post type `sct_testimonial` and a hierarchical `sct_category` taxonomy.
 * Registered meta for rating, review title, source platform, source URL, provider review id, reviewer profile URL, date provenance, consent, alternates, and source lookup state.
-* Reviewer email addresses and private owner notes are deliberately **not** registered as meta. Unregistered keys cannot be reached through the REST API, so no headless or mobile consumer can leak them.
+* Reviewer email addresses are not registered as meta. Private consent and research annotations are available only to authorized editors in REST edit context; anonymous responses omit them.
 
 **Rendering**
 
@@ -73,7 +73,7 @@ If you are migrating from Testimonials Showcase, keep that plugin installed and 
 
 `wp eval-file wp-content/plugins/shootcal-testimonials/bin/import-testimonials-showcase.php`
 
-Add `-- --apply` to write. The importer leaves every legacy record untouched either way.
+Add the positional argument `apply` to write. The importer leaves every legacy record untouched either way.
 
 == Frequently Asked Questions ==
 
@@ -118,6 +118,10 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 Sixty per list. With View more enabled the default total held behind the button is twenty four. Both are page-weight guards rather than design constraints.
 
 == Changelog ==
+
+= 0.4.1 =
+* Keep card, modal and form surfaces light and readable under dark themes.
+* Bundle the unmodified Google G from Google FirebaseUI with its Apache-2.0 license and source attribution.
 
 = 0.4.0 =
 * Modern accessible cards and dialogs, unique IDs for repeated lists, reliable keyboard focus and full-text fallback without JavaScript.
@@ -164,3 +168,13 @@ Sixty per list. With View more enabled the default total held behind the button 
 * Settings page for layout defaults, which card elements to show, and review structured data, which is off by default.
 * Conditional asset loading: the stylesheet is enqueued only on requests that render a list, and the script only when View more is in use.
 * Uninstall handler that removes options only and preserves authored content.
+
+== Privacy ==
+
+The plugin makes no outbound requests, tracks no visitors, and requires no ShootCal account. Public submissions store the reviewer name and quote as pending WordPress content; an optional email is private metadata for site editors. A temporary hashed-IP key enforces a short submission cooldown. Editors control publication and can use native WordPress Trash. Third-party source links open only when a visitor follows them.
+
+== Third-party asset ==
+
+The unmodified Google G in assets/google-g.svg is from Google FirebaseUI, copyright Google Inc., distributed under Apache-2.0. The full license is included in assets/google-g.LICENSE. Source: https://github.com/firebase/firebaseui-web/blob/33ee99f44947bbf2f8e66763b5a2df850a7d1a1c/image/google.svg . Google marks remain subject to Google's brand guidelines; this plugin is not affiliated with or endorsed by Google.
+
+Development source: https://github.com/rsmith4321/shootcal-testimonials

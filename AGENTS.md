@@ -34,7 +34,7 @@ are restricted to authorized REST edit context. Keep both privacy boundaries int
   reviews from other websites, with manual action as the stated consequence. The toggle
   exists for directory-style sites reviewing other businesses. Do not flip the default.
 - **Google branding.** Official G or wordmark, unaltered, no custom badge, and never stars
-  beside the Google name or logo. The packaged `assets/google-g.png` is the official unmodified Google G asset.
+  beside the Google name or logo. The packaged `assets/google-g.svg` is the official unmodified Google G asset.
   Preserve its proportions and clear space.
 - **Show an "as of" date** whenever an overall rating or review count is displayed. The
   aggregate is only emitted when `rating_as_of` is set.
