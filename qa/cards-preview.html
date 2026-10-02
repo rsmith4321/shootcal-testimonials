@@ -1,0 +1,759 @@
+<style>
+/**
+ * ShootCal Testimonials frontend styles.
+ *
+ * Cards float on a layered shadow, hold a uniform height across the grid, and open a
+ * native dialog for the complete review. Column ceiling follows the shared convention:
+ * three on desktop, two on tablets, one on phones.
+ *
+ * Progressive enhancement. Nothing here clamps a quote or reveals an open control until
+ * JavaScript adds .sct-js to the section, so without script the full review is simply
+ * on the page and readable.
+ */
+
+.sct-testimonials {
+	--sct-gap: 1.35rem;
+	--sct-radius: 18px;
+	--sct-radius-sm: 12px;
+	--sct-quote-lh: 1.58;
+	--sct-muted: #5d6672;
+	--sct-line: rgba( 15, 23, 42, 0.09 );
+	--sct-star: #e8a33d;
+	--sct-shadow: 0 1px 2px rgba( 15, 23, 42, 0.05 ), 0 8px 24px -12px rgba( 15, 23, 42, 0.18 );
+	--sct-shadow-lift: 0 2px 4px rgba( 15, 23, 42, 0.06 ), 0 18px 40px -16px rgba( 15, 23, 42, 0.28 );
+	position: relative;
+	margin-block: 3rem;
+}
+
+.sct-testimonials__header {
+	margin-block-end: 1.75rem;
+	text-align: center;
+}
+
+.sct-testimonials__eyebrow {
+	margin: 0 0 0.4rem;
+	font-size: 0.76rem;
+	font-weight: 650;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var( --sct-muted );
+}
+
+.sct-testimonials__heading {
+	margin: 0;
+	font-size: clamp( 1.45rem, 1.1rem + 1.1vw, 2.1rem );
+	line-height: 1.18;
+	letter-spacing: -0.015em;
+}
+
+.sct-testimonials__intro {
+	margin: 0.65rem auto 0;
+	max-width: 58ch;
+	color: var( --sct-muted );
+}
+
+/* Grid. Column count comes from the section data attribute, applied as a modifier
+   class so no inline layout is needed. */
+.sct-testimonials__grid {
+	display: grid;
+	gap: var( --sct-gap );
+	grid-template-columns: minmax( 0, 1fr );
+	align-items: stretch;
+}
+
+@media ( min-width: 640px ) {
+	.sct-testimonials__grid--2,
+	.sct-testimonials__grid--3 {
+		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+	}
+}
+
+@media ( min-width: 980px ) {
+	.sct-testimonials__grid--3 {
+		grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+	}
+}
+
+/* Card. Stacking is isolated so a theme's image rules cannot cover the rating or the
+   source line; this is the same failure the Social Feed hover work had to fix. */
+.sct-testimonial {
+	position: relative;
+	isolation: isolate;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
+	border: 1px solid var( --sct-line );
+	border-radius: var( --sct-radius );
+	background: #fff;
+	box-shadow: var( --sct-shadow );
+	transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+.sct-testimonial--hidden {
+	display: none;
+}
+
+.sct-js .sct-testimonial[data-sct-card] {
+	cursor: pointer;
+}
+
+.sct-js .sct-testimonial[data-sct-card]:hover {
+	box-shadow: var( --sct-shadow-lift );
+	transform: translateY( -3px );
+}
+
+.sct-testimonial:focus-within {
+	box-shadow: var( --sct-shadow-lift );
+}
+
+/* Media area keeps a fixed ratio on every card, photo or monogram, because uniform
+   card height depends on this block never varying. */
+.sct-testimonial__media {
+	position: relative;
+	z-index: 0;
+	flex: none;
+	aspect-ratio: 4 / 3;
+	overflow: hidden;
+	background: #f1f3f6;
+}
+
+.sct-testimonial__media img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 400ms ease;
+}
+
+.sct-js .sct-testimonial[data-sct-card]:hover .sct-testimonial__media img {
+	transform: scale( 1.035 );
+}
+
+.sct-testimonial__media--monogram {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient( 140deg, #eef1f6 0%, #dfe4ec 55%, #d3dae6 100% );
+}
+
+.sct-testimonial__media--monogram span {
+	font-size: 2.1rem;
+	font-weight: 650;
+	letter-spacing: 0.04em;
+	color: rgba( 15, 23, 42, 0.34 );
+}
+
+.sct-testimonial__body {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: 0.6rem;
+	padding: 1.15rem 1.2rem 1.2rem;
+}
+
+.sct-rating {
+	display: block;
+	line-height: 1;
+	color: var( --sct-star );
+	letter-spacing: 0.09em;
+}
+
+.sct-star {
+	font-size: 0.92rem;
+}
+
+/* Reserving the clamp height is what makes short reviews occupy the same card height
+   as long ones, so the grid reads as a uniform set rather than a ragged mosaic. */
+.sct-testimonial__quote {
+	margin: 0;
+	font-size: 0.955rem;
+	line-height: var( --sct-quote-lh );
+	color: #23292f;
+}
+
+.sct-js .sct-testimonial__quote {
+	min-height: calc( var( --sct-lines, 5 ) * var( --sct-quote-lh ) * 1em );
+	display: -webkit-box;
+	-webkit-line-clamp: var( --sct-lines, 5 );
+	line-clamp: var( --sct-lines, 5 );
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	/* Preserve the reviewer's paragraph breaks; client wording stays verbatim. */
+	white-space: pre-line;
+}
+
+.sct-testimonial__by {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.45rem;
+	/* Pinned to the bottom so attribution lines up across every card in the row. */
+	margin-block-start: auto;
+	font-size: 0.86rem;
+}
+
+.sct-testimonial__name {
+	font-weight: 650;
+	letter-spacing: -0.005em;
+}
+
+.sct-testimonial__date {
+	color: var( --sct-muted );
+	font-size: 0.8rem;
+}
+
+.sct-testimonial__date::before {
+	content: "\00b7";
+	margin-inline-end: 0.45rem;
+}
+
+/* Open control stays hidden until script is present, because a dialog cannot be opened
+   without JavaScript and a dead button is worse than no button. */
+.sct-testimonial__open {
+	display: none;
+}
+
+.sct-js .sct-testimonial__open {
+	display: block;
+	width: 100%;
+	padding: 0.72rem 1.2rem;
+	border: 0;
+	border-block-start: 1px solid var( --sct-line );
+	background: transparent;
+	font: inherit;
+	font-size: 0.82rem;
+	font-weight: 620;
+	color: var( --sct-muted );
+	text-align: start;
+	cursor: pointer;
+	transition: color 160ms ease, background-color 160ms ease;
+}
+
+.sct-js .sct-testimonial__open:hover,
+.sct-js .sct-testimonial__open:focus-visible {
+	color: #111827;
+	background: rgba( 15, 23, 42, 0.035 );
+}
+
+.sct-testimonial__open:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: -2px;
+}
+
+/* Source attribution. Held visually apart from the stars above because Google's brand
+   rules forbid placing stars beside the Google name or logo. */
+.sct-source {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem;
+	margin: 0;
+	padding-block-start: 0.6rem;
+	border-block-start: 1px solid var( --sct-line );
+	font-size: 0.735rem;
+	line-height: 1.45;
+	color: var( --sct-muted );
+}
+
+.sct-source__mark {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	color: #4285f4;
+}
+
+.sct-source__mark svg {
+	display: block;
+}
+
+.sct-source__link {
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 0.16em;
+}
+
+.sct-source__link:hover,
+.sct-source__link:focus-visible {
+	color: #111827;
+}
+
+/* Dialog. */
+.sct-dialog {
+	width: min( 92vw, 620px );
+	max-height: 88vh;
+	padding: 0;
+	border: 0;
+	border-radius: var( --sct-radius );
+	background: #fff;
+	box-shadow: 0 24px 70px -20px rgba( 15, 23, 42, 0.45 );
+	color: #1b2027;
+	overflow: hidden;
+}
+
+.sct-dialog::backdrop {
+	background: rgba( 15, 23, 42, 0.55 );
+	backdrop-filter: blur( 3px );
+}
+
+.sct-dialog[open] {
+	animation: sct-pop 200ms ease;
+}
+
+@keyframes sct-pop {
+	from {
+		opacity: 0;
+		transform: translateY( 10px ) scale( 0.985 );
+	}
+}
+
+.sct-dialog__inner {
+	position: relative;
+	max-height: 88vh;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.sct-dialog__media img {
+	display: block;
+	width: 100%;
+	max-height: 46vh;
+	object-fit: cover;
+}
+
+.sct-dialog__close {
+	position: absolute;
+	inset-block-start: 0.7rem;
+	inset-inline-end: 0.7rem;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border: 0;
+	border-radius: 999px;
+	background: rgba( 255, 255, 255, 0.92 );
+	box-shadow: 0 2px 10px rgba( 15, 23, 42, 0.22 );
+	font-size: 1.15rem;
+	line-height: 1;
+	color: #1b2027;
+	cursor: pointer;
+}
+
+.sct-dialog__close:hover,
+.sct-dialog__close:focus-visible {
+	background: #fff;
+}
+
+.sct-dialog__close:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+.sct-dialog__content {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 1.5rem 1.55rem 1.7rem;
+}
+
+.sct-dialog__heading {
+	margin: 0;
+	font-size: 1.06rem;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+}
+
+.sct-dialog__quote {
+	margin: 0;
+	font-size: 1rem;
+	line-height: 1.62;
+	white-space: pre-line;
+}
+
+.sct-dialog__by {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.5rem;
+	font-size: 0.88rem;
+}
+
+.sct-dialog__name {
+	font-weight: 650;
+}
+
+.sct-dialog__date {
+	color: var( --sct-muted );
+	font-size: 0.82rem;
+}
+
+/* View more. */
+.sct-testimonials__more {
+	display: flex;
+	justify-content: center;
+	margin-block-start: 1.75rem;
+}
+
+.sct-more {
+	padding: 0.68rem 1.6rem;
+	border: 1px solid rgba( 15, 23, 42, 0.16 );
+	border-radius: 999px;
+	background: #fff;
+	box-shadow: var( --sct-shadow );
+	font: inherit;
+	font-size: 0.87rem;
+	font-weight: 620;
+	color: #1b2027;
+	cursor: pointer;
+	transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.sct-more:hover,
+.sct-more:focus-visible {
+	box-shadow: var( --sct-shadow-lift );
+	transform: translateY( -1px );
+}
+
+.sct-more:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+/* Live region: available to assistive technology, out of the visual flow. */
+.sct-live {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect( 0, 0, 0, 0 );
+	white-space: nowrap;
+	border: 0;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.sct-testimonial,
+	.sct-testimonial__media img,
+	.sct-more,
+	.sct-testimonial__open {
+		transition: none;
+	}
+
+	.sct-js .sct-testimonial[data-sct-card]:hover {
+		transform: none;
+	}
+
+	.sct-dialog[open] {
+		animation: none;
+	}
+}
+
+</style>
+
+<section class="sct-preview-note">
+  <p><strong>Design preview.</strong> Real plugin CSS and JS, sample content. Names and quotes are placeholders, not client reviews. Resize the window to check the three, two and one column breakpoints, and click any card to open the dialog.</p>
+</section>
+
+<section class="sct-section sct-testimonials" data-sct-columns="3" data-sct-initial="6" data-sct-lines="5">
+  <div class="sct-testimonials__header">
+    <p class="sct-testimonials__eyebrow">Kind words</p>
+    <h2 class="sct-testimonials__heading">What clients remember</h2>
+    <p class="sct-testimonials__intro">A few of the families, couples and seniors who let me photograph the parts of their lives that matter.</p>
+  </div>
+
+  <div class="sct-testimonials__grid sct-testimonials__grid--3">
+
+    <figure class="sct-testimonial sct-testimonial--photo" data-sct-card>
+      <div class="sct-testimonial__media"><img alt="" loading="lazy" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e9d8c3'/%3E%3Cstop offset='1' stop-color='%23c2a68b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='300' fill='url(%23a)'/%3E%3Ccircle cx='300' cy='80' r='46' fill='%23fff6e6' opacity='.65'/%3E%3Cpath d='M0 230 Q100 180 200 225 T400 210 V300 H0Z' fill='%238d7358' opacity='.45'/%3E%3C/svg%3E" /></div>
+      <div class="sct-testimonial__body">
+        <span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span>
+        <blockquote class="sct-testimonial__quote" style="--sct-lines:5">&#8220;Ryan has a gift for making people forget the camera is there. We had our two year old and a very opinionated seven year old with us, and somehow we came away with photographs that look like us rather than a stiff family portrait. He answered every random question my son asked until he finally got a real smile out of him. First time we have all been photographed together and I could not be happier with how every single image turned out.&#8221;</blockquote>
+        <figcaption class="sct-testimonial__by"><span class="sct-testimonial__name">Sample Family Review</span><span class="sct-testimonial__date">October 1, 2026</span></figcaption>
+        <p class="sct-source sct-source--google"><span class="sct-source__mark" aria-hidden="true"><svg viewBox="0 0 48 48" width="14" height="14" focusable="false" role="presentation"><circle cx="24" cy="24" r="20" fill="currentColor"/></svg></span><span class="sct-source__label">Originally posted on Google</span><a class="sct-source__link" href="#" rel="nofollow noopener external" target="_blank">View original review<span class="screen-reader-text"> (opens in a new tab)</span></a></p>
+      </div>
+      <button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="sct-dialog-1001">Read full review</button>
+    </figure>
+    <dialog class="sct-dialog" id="sct-dialog-1001" data-sct-dialog aria-labelledby="sct-dialog-1001-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="Close">&#215;</button><div class="sct-dialog__media"><img alt="" loading="lazy" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e9d8c3'/%3E%3Cstop offset='1' stop-color='%23c2a68b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='300' fill='url(%23a)'/%3E%3Ccircle cx='300' cy='80' r='46' fill='%23fff6e6' opacity='.65'/%3E%3Cpath d='M0 230 Q100 180 200 225 T400 210 V300 H0Z' fill='%238d7358' opacity='.45'/%3E%3C/svg%3E" /></div><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="sct-dialog-1001-title">Sample Family Review review</h3><span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span><blockquote class="sct-dialog__quote">&#8220;Ryan has a gift for making people forget the camera is there. We had our two year old and a very opinionated seven year old with us, and somehow we came away with photographs that look like us rather than a stiff family portrait. He answered every random question my son asked until he finally got a real smile out of him. First time we have all been photographed together and I could not be happier with how every single image turned out.&#8221;</blockquote><div class="sct-dialog__by"><span class="sct-dialog__name">Sample Family Review</span><span class="sct-dialog__date">October 1, 2026</span></div><p class="sct-source sct-source--google"><span class="sct-source__mark" aria-hidden="true"><svg viewBox="0 0 48 48" width="14" height="14" focusable="false" role="presentation"><circle cx="24" cy="24" r="20" fill="currentColor"/></svg></span><span class="sct-source__label">Originally posted on Google</span><a class="sct-source__link" href="#" rel="nofollow noopener external" target="_blank">View original review</a></p></div></div></dialog>
+
+    <figure class="sct-testimonial sct-testimonial--photo" data-sct-card>
+      <div class="sct-testimonial__media"><img alt="" loading="lazy" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Cdefs%3E%3ClinearGradient id='b' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23d7dfea'/%3E%3Cstop offset='1' stop-color='%239aa8bd'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='300' fill='url(%23b)'/%3E%3Cpath d='M120 300 V150 l80 -60 80 60 v150Z' fill='%23575f73' opacity='.55'/%3E%3Crect x='180' y='200' width='40' height='100' fill='%233f4657' opacity='.6'/%3E%3C/svg%3E" /></div>
+      <div class="sct-testimonial__body">
+        <span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span>
+        <blockquote class="sct-testimonial__quote" style="--sct-lines:5">&#8220;He was amazing and the pictures turned out so good!&#8221;</blockquote>
+        <figcaption class="sct-testimonial__by"><span class="sct-testimonial__name">Short Quote Example</span><span class="sct-testimonial__date">September 25, 2026</span></figcaption>
+        <p class="sct-source sct-source--google"><span class="sct-source__mark" aria-hidden="true"><svg viewBox="0 0 48 48" width="14" height="14" focusable="false" role="presentation"><circle cx="24" cy="24" r="20" fill="currentColor"/></svg></span><span class="sct-source__label">Originally posted on Google</span><a class="sct-source__link" href="#" rel="nofollow noopener external" target="_blank">View original review<span class="screen-reader-text"> (opens in a new tab)</span></a></p>
+      </div>
+      <button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="sct-dialog-1002">Read full review</button>
+    </figure>
+    <dialog class="sct-dialog" id="sct-dialog-1002" data-sct-dialog aria-labelledby="sct-dialog-1002-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="Close">&#215;</button><div class="sct-dialog__media"><img alt="" loading="lazy" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Cdefs%3E%3ClinearGradient id='b' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23d7dfea'/%3E%3Cstop offset='1' stop-color='%239aa8bd'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='300' fill='url(%23b)'/%3E%3Cpath d='M120 300 V150 l80 -60 80 60 v150Z' fill='%23575f73' opacity='.55'/%3E%3C/svg%3E" /></div><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="sct-dialog-1002-title">Short Quote Example review</h3><span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span><blockquote class="sct-dialog__quote">&#8220;He was amazing and the pictures turned out so good!&#8221;</blockquote><div class="sct-dialog__by"><span class="sct-dialog__name">Short Quote Example</span><span class="sct-dialog__date">September 25, 2026</span></div></div></div></dialog>
+
+    <figure class="sct-testimonial sct-testimonial--monogram" data-sct-card>
+      <div class="sct-testimonial__media sct-testimonial__media--monogram" data-initial="JM" aria-hidden="true"><span>JM</span></div>
+      <div class="sct-testimonial__body">
+        <span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span>
+        <blockquote class="sct-testimonial__quote" style="--sct-lines:5">&#8220;Our ceremony moved indoors at the last minute because of weather and Ryan did not miss a beat. He scouted the new room in about four minutes, worked out where the light was coming from, and the photographs look like we planned it that way the whole time. That calm is the reason I would book him again without thinking about it.&#8221;</blockquote>
+        <figcaption class="sct-testimonial__by"><span class="sct-testimonial__name">No Photo Example</span><span class="sct-testimonial__date">September 12, 2026</span></figcaption>
+        <p class="sct-source sct-source--zola"><span class="sct-source__label">Originally posted on Zola</span><a class="sct-source__link" href="#" rel="nofollow noopener external" target="_blank">View original review<span class="screen-reader-text"> (opens in a new tab)</span></a></p>
+      </div>
+      <button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="sct-dialog-1003">Read full review</button>
+    </figure>
+    <dialog class="sct-dialog" id="sct-dialog-1003" data-sct-dialog aria-labelledby="sct-dialog-1003-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="Close">&#215;</button><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="sct-dialog-1003-title">No Photo Example review</h3><span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span><blockquote class="sct-dialog__quote">&#8220;Our ceremony moved indoors at the last minute because of weather and Ryan did not miss a beat. He scouted the new room in about four minutes, worked out where the light was coming from, and the photographs look like we planned it that way the whole time. That calm is the reason I would book him again without thinking about it.&#8221;</blockquote><div class="sct-dialog__by"><span class="sct-dialog__name">No Photo Example</span><span class="sct-dialog__date">September 12, 2026</span></div><p class="sct-source sct-source--zola"><span class="sct-source__label">Originally posted on Zola</span><a class="sct-source__link" href="#" rel="nofollow noopener external" target="_blank">View original review</a></p></div></div></dialog>
+
+    <figure class="sct-testimonial sct-testimonial--photo" data-sct-card>
+      <div class="sct-testimonial__media"><img alt="" loading="lazy" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Cdefs%3E%3ClinearGradient id='c' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%23cfe3e0'/%3E%3Cstop offset='1' stop-color='%238fb3ae'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='300' fill='url(%23c)'/%3E%3Cellipse cx='200' cy='300' rx='230' ry='90' fill='%23597d78' opacity='.4'/%3E%3C/svg%3E" /></div>
+      <div class="sct-testimonial__body">
+        <span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span>
+        <blockquote class="sct-testimonial__quote" style="--sct-lines:5">&#8220;Engagement session on the beach at sunset. He knew exactly where to stand us so the light worked, and kept us moving so nothing felt posed.&#8221;</blockquote>
+        <figcaption class="sct-testimonial__by"><span class="sct-testimonial__name">Mid Length Example</span><span class="sct-testimonial__date">September 10, 2026</span></figcaption>
+        <p class="sct-source sct-source--google"><span class="sct-source__mark" aria-hidden="true"><svg viewBox="0 0 48 48" width="14" height="14" focusable="false" role="presentation"><circle cx="24" cy="24" r="20" fill="currentColor"/></svg></span><span class="sct-source__label">Originally posted on Google</span><a class="sct-source__link" href="#" rel="nofollow noopener external" target="_blank">View original review<span class="screen-reader-text"> (opens in a new tab)</span></a></p>
+      </div>
+      <button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="sct-dialog-1004">Read full review</button>
+    </figure>
+    <dialog class="sct-dialog" id="sct-dialog-1004" data-sct-dialog aria-labelledby="sct-dialog-1004-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="Close">&#215;</button><div class="sct-dialog__media"><img alt="" loading="lazy" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Cdefs%3E%3ClinearGradient id='c' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop offset='0' stop-color='%23cfe3e0'/%3E%3Cstop offset='1' stop-color='%238fb3ae'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='300' fill='url(%23c)'/%3E%3Cellipse cx='200' cy='300' rx='230' ry='90' fill='%23597d78' opacity='.4'/%3E%3C/svg%3E" /></div><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="sct-dialog-1004-title">Mid Length Example review</h3><span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span><blockquote class="sct-dialog__quote">&#8220;Engagement session on the beach at sunset. He knew exactly where to stand us so the light worked, and kept us moving so nothing felt posed.&#8221;</blockquote><div class="sct-dialog__by"><span class="sct-dialog__name">Mid Length Example</span><span class="sct-dialog__date">September 10, 2026</span></div></div></div></dialog>
+
+    <figure class="sct-testimonial sct-testimonial--monogram" data-sct-card>
+      <div class="sct-testimonial__media sct-testimonial__media--monogram" data-initial="AB" aria-hidden="true"><span>AB</span></div>
+      <div class="sct-testimonial__body">
+        <span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span>
+        <blockquote class="sct-testimonial__quote" style="--sct-lines:5">&#8220;Senior portraits done in an hour, no stress, and the whole gallery was delivered faster than promised.&#8221;</blockquote>
+        <figcaption class="sct-testimonial__by"><span class="sct-testimonial__name">Hidden Card One</span><span class="sct-testimonial__date">August 21, 2026</span></figcaption>
+        <p class="sct-source sct-source--google"><span class="sct-source__mark" aria-hidden="true"><svg viewBox="0 0 48 48" width="14" height="14" focusable="false" role="presentation"><circle cx="24" cy="24" r="20" fill="currentColor"/></svg></span><span class="sct-source__label">Originally posted on Google</span></p>
+      </div>
+      <button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="sct-dialog-1005">Read full review</button>
+    </figure>
+    <dialog class="sct-dialog" id="sct-dialog-1005" data-sct-dialog aria-labelledby="sct-dialog-1005-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="Close">&#215;</button><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="sct-dialog-1005-title">Hidden Card One review</h3><span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span><blockquote class="sct-dialog__quote">&#8220;Senior portraits done in an hour, no stress, and the whole gallery was delivered faster than promised.&#8221;</blockquote><div class="sct-dialog__by"><span class="sct-dialog__name">Hidden Card One</span><span class="sct-dialog__date">August 21, 2026</span></div></div></div></dialog>
+
+    <figure class="sct-testimonial sct-testimonial--hidden sct-testimonial--photo" data-sct-card>
+      <div class="sct-testimonial__media"><img alt="" loading="lazy" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'%3E%3Cdefs%3E%3ClinearGradient id='d' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23e6d3dd'/%3E%3Cstop offset='1' stop-color='%23b79aa9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='300' fill='url(%23d)'/%3E%3Cpath d='M0 240 Q120 190 220 235 T400 215 V300 H0Z' fill='%237a5c6d' opacity='.4'/%3E%3C/svg%3E" /></div>
+      <div class="sct-testimonial__body">
+        <span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span>
+        <blockquote class="sct-testimonial__quote" style="--sct-lines:5">&#8220;This card starts collapsed behind View more. Clicking the button reveals one full row at a time and moves focus to the first card that appeared, with a status announcement for screen readers. No request is made.&#8221;</blockquote>
+        <figcaption class="sct-testimonial__by"><span class="sct-testimonial__name">Hidden Card Two</span><span class="sct-testimonial__date">August 8, 2026</span></figcaption>
+        <p class="sct-source sct-source--weddingwire"><span class="sct-source__label">Originally posted on Weddingwire</span></p>
+      </div>
+      <button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="sct-dialog-1006">Read full review</button>
+    </figure>
+    <dialog class="sct-dialog" id="sct-dialog-1006" data-sct-dialog aria-labelledby="sct-dialog-1006-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="Close">&#215;</button><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="sct-dialog-1006-title">Hidden Card Two review</h3><span class="sct-rating" role="img" aria-label="5 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span><blockquote class="sct-dialog__quote">&#8220;This card starts collapsed behind View more. Clicking the button reveals one full row at a time and moves focus to the first card that appeared, with a status announcement for screen readers. No request is made.&#8221;</blockquote><div class="sct-dialog__by"><span class="sct-dialog__name">Hidden Card Two</span><span class="sct-dialog__date">August 8, 2026</span></div></div></div></dialog>
+
+    <figure class="sct-testimonial sct-testimonial--hidden sct-testimonial--monogram" data-sct-card>
+      <div class="sct-testimonial__media sct-testimonial__media--monogram" data-initial="CD" aria-hidden="true"><span>CD</span></div>
+      <div class="sct-testimonial__body">
+        <span class="sct-rating" role="img" aria-label="4 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span>
+        <blockquote class="sct-testimonial__quote" style="--sct-lines:5">&#8220;A four star example, to show that the rating row is not hardcoded to five and that an unrated item simply renders no stars at all.&#8221;</blockquote>
+        <figcaption class="sct-testimonial__by"><span class="sct-testimonial__name">Hidden Card Three</span><span class="sct-testimonial__date">July 31, 2026</span></figcaption>
+      </div>
+      <button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="sct-dialog-1007">Read full review</button>
+    </figure>
+    <dialog class="sct-dialog" id="sct-dialog-1007" data-sct-dialog aria-labelledby="sct-dialog-1007-title"><div class="sct-dialog__inner"><button type="button" class="sct-dialog__close" data-sct-close aria-label="Close">&#215;</button><div class="sct-dialog__content"><h3 class="sct-dialog__heading" id="sct-dialog-1007-title">Hidden Card Three review</h3><span class="sct-rating" role="img" aria-label="4 stars out of 5"><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span><span class="sct-star" aria-hidden="true">&#9733;</span></span><blockquote class="sct-dialog__quote">&#8220;A four star example, to show that the rating row is not hardcoded to five and that an unrated item simply renders no stars at all.&#8221;</blockquote><div class="sct-dialog__by"><span class="sct-dialog__name">Hidden Card Three</span><span class="sct-dialog__date">July 31, 2026</span></div></div></div></dialog>
+
+  </div>
+
+  <div class="sct-testimonials__more"><button type="button" class="sct-more" data-sct-more>View more</button></div>
+</section>
+
+<style>
+.sct-preview-note {
+  max-width: 74ch;
+  margin: 0 0 2rem;
+  padding: 0.9rem 1.1rem;
+  border-left: 3px solid #2563eb;
+  border-radius: 0 10px 10px 0;
+  background: #f5f8ff;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #24303f;
+}
+.sct-preview-note p { margin: 0; }
+.screen-reader-text {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+</style>
+
+<script>
+/**
+ * ShootCal Testimonials behaviour.
+ *
+ * Three responsibilities, all enhancement rather than requirement:
+ *
+ * 1. Mark each section as script-enabled, which turns on quote clamping and reveals
+ *    the open control. Without this the full review is already on the page.
+ * 2. Open and close the native dialog from the card, the open control or the close
+ *    button, including a click on the backdrop.
+ * 3. Reveal one row at a time for View more, with focus moved to the first newly
+ *    revealed card and a live-region announcement.
+ *
+ * No request is made anywhere in this file. A visitor click cannot trigger a database
+ * query or a call to a review provider.
+ */
+( function () {
+	'use strict';
+
+	function columnsFor( section ) {
+		var columns = parseInt( section.getAttribute( 'data-sct-columns' ), 10 );
+		return columns > 0 ? columns : 3;
+	}
+
+	/**
+	 * Resolve the dialog belonging to one card.
+	 *
+	 * Dialogs are rendered as siblings of their card, never inside it, because the card
+	 * clips overflow and gains a transform on hover, either of which would break the
+	 * fixed positioning a modal dialog depends on. The authoritative link is the
+	 * aria-controls id on the open control.
+	 */
+	function dialogFor( card ) {
+		var opener = card.querySelector( '[data-sct-open]' );
+		var id = opener ? opener.getAttribute( 'aria-controls' ) : null;
+
+		return id ? document.getElementById( id ) : null;
+	}
+
+	function openDialog( card ) {
+		var dialog = dialogFor( card );
+
+		if ( dialog && typeof dialog.showModal === 'function' && ! dialog.open ) {
+			dialog.showModal();
+		}
+	}
+
+	function wireDialog( dialog ) {
+		var close = dialog.querySelector( '[data-sct-close]' );
+
+		if ( close ) {
+			close.addEventListener( 'click', function () {
+				dialog.close();
+			} );
+		}
+
+		// A click landing on the dialog element itself rather than its inner wrapper
+		// means the backdrop was clicked, since the inner box covers the dialog area.
+		dialog.addEventListener( 'click', function ( event ) {
+			if ( event.target === dialog ) {
+				dialog.close();
+			}
+		} );
+	}
+
+	function wireCard( card ) {
+		var opener = card.querySelector( '[data-sct-open]' );
+
+		if ( opener ) {
+			opener.addEventListener( 'click', function ( event ) {
+				// Stop the card handler firing a second time for the same click.
+				event.stopPropagation();
+				openDialog( card );
+			} );
+		}
+
+		// Mouse only. Keyboard and assistive technology use the open control, which is a
+		// real button, so the card itself is deliberately not focusable.
+		card.addEventListener( 'click', function ( event ) {
+			// Never hijack a real link, such as the source attribution.
+			if ( event.target.closest && event.target.closest( 'a, button' ) ) {
+				return;
+			}
+
+			openDialog( card );
+		} );
+	}
+
+	function wireMore( section ) {
+		var button = section.querySelector( '[data-sct-more]' );
+
+		if ( ! button ) {
+			return;
+		}
+
+		var live = document.createElement( 'p' );
+		live.className = 'sct-live';
+		live.setAttribute( 'role', 'status' );
+		live.setAttribute( 'aria-live', 'polite' );
+		section.appendChild( live );
+
+		button.addEventListener( 'click', function () {
+			var hidden = section.querySelectorAll( '.sct-testimonial--hidden' );
+
+			if ( ! hidden.length ) {
+				return;
+			}
+
+			var reveal = Math.min( columnsFor( section ), hidden.length );
+			var first = null;
+
+			for ( var i = 0; i < reveal; i++ ) {
+				hidden[ i ].classList.remove( 'sct-testimonial--hidden' );
+
+				if ( ! first ) {
+					first = hidden[ i ];
+				}
+			}
+
+			var remaining = section.querySelectorAll( '.sct-testimonial--hidden' ).length;
+			var total = section.querySelectorAll( '.sct-testimonial' ).length;
+
+			live.textContent = ( total - remaining ) + ' of ' + total + ' testimonials shown';
+
+			if ( first ) {
+				first.setAttribute( 'tabindex', '-1' );
+				first.focus( { preventScroll: false } );
+			}
+
+			if ( ! remaining ) {
+				var wrap = button.parentNode;
+				button.remove();
+
+				if ( wrap && wrap.parentNode ) {
+					wrap.remove();
+				}
+			}
+		} );
+	}
+
+	function init( section ) {
+		if ( section.getAttribute( 'data-sct-ready' ) ) {
+			return;
+		}
+
+		section.setAttribute( 'data-sct-ready', '1' );
+		section.classList.add( 'sct-js' );
+
+		Array.prototype.forEach.call( section.querySelectorAll( '.sct-testimonial' ), wireCard );
+
+		// Dialogs sit outside the section, so walk the controls to find and wire each
+		// one exactly once even when several shortcodes share a page.
+		Array.prototype.forEach.call( section.querySelectorAll( '[data-sct-open]' ), function ( opener ) {
+			var id = opener.getAttribute( 'aria-controls' );
+			var dialog = id ? document.getElementById( id ) : null;
+
+			if ( dialog && ! dialog.getAttribute( 'data-sct-wired' ) ) {
+				dialog.setAttribute( 'data-sct-wired', '1' );
+				wireDialog( dialog );
+			}
+		} );
+
+		wireMore( section );
+	}
+
+	function boot() {
+		Array.prototype.forEach.call( document.querySelectorAll( '.sct-testimonials' ), init );
+	}
+
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', boot );
+	} else {
+		boot();
+	}
+}() );
+
+</script>
