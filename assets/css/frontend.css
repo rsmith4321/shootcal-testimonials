@@ -1,0 +1,454 @@
+/**
+ * ShootCal Testimonials frontend styles.
+ *
+ * Cards float on a layered shadow, hold a uniform height across the grid, and open a
+ * native dialog for the complete review. Column ceiling follows the shared convention:
+ * three on desktop, two on tablets, one on phones.
+ *
+ * Progressive enhancement. Nothing here clamps a quote or reveals an open control until
+ * JavaScript adds .sct-js to the section, so without script the full review is simply
+ * on the page and readable.
+ */
+
+.sct-testimonials {
+	--sct-gap: 1.35rem;
+	--sct-radius: 18px;
+	--sct-radius-sm: 12px;
+	--sct-quote-lh: 1.58;
+	--sct-muted: #5d6672;
+	--sct-line: rgba( 15, 23, 42, 0.09 );
+	--sct-star: #e8a33d;
+	--sct-shadow: 0 1px 2px rgba( 15, 23, 42, 0.05 ), 0 8px 24px -12px rgba( 15, 23, 42, 0.18 );
+	--sct-shadow-lift: 0 2px 4px rgba( 15, 23, 42, 0.06 ), 0 18px 40px -16px rgba( 15, 23, 42, 0.28 );
+	position: relative;
+	margin-block: 3rem;
+}
+
+.sct-testimonials__header {
+	margin-block-end: 1.75rem;
+	text-align: center;
+}
+
+.sct-testimonials__eyebrow {
+	margin: 0 0 0.4rem;
+	font-size: 0.76rem;
+	font-weight: 650;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var( --sct-muted );
+}
+
+.sct-testimonials__heading {
+	margin: 0;
+	font-size: clamp( 1.45rem, 1.1rem + 1.1vw, 2.1rem );
+	line-height: 1.18;
+	letter-spacing: -0.015em;
+}
+
+.sct-testimonials__intro {
+	margin: 0.65rem auto 0;
+	max-width: 58ch;
+	color: var( --sct-muted );
+}
+
+/* Grid. Column count comes from the section data attribute, applied as a modifier
+   class so no inline layout is needed. */
+.sct-testimonials__grid {
+	display: grid;
+	gap: var( --sct-gap );
+	grid-template-columns: minmax( 0, 1fr );
+	align-items: stretch;
+}
+
+@media ( min-width: 640px ) {
+	.sct-testimonials__grid--2,
+	.sct-testimonials__grid--3 {
+		grid-template-columns: repeat( 2, minmax( 0, 1fr ) );
+	}
+}
+
+@media ( min-width: 980px ) {
+	.sct-testimonials__grid--3 {
+		grid-template-columns: repeat( 3, minmax( 0, 1fr ) );
+	}
+}
+
+/* Card. Stacking is isolated so a theme's image rules cannot cover the rating or the
+   source line; this is the same failure the Social Feed hover work had to fix. */
+.sct-testimonial {
+	position: relative;
+	isolation: isolate;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
+	border: 1px solid var( --sct-line );
+	border-radius: var( --sct-radius );
+	background: #fff;
+	box-shadow: var( --sct-shadow );
+	transition: box-shadow 200ms ease, transform 200ms ease;
+}
+
+.sct-testimonial--hidden {
+	display: none;
+}
+
+.sct-js .sct-testimonial[data-sct-card] {
+	cursor: pointer;
+}
+
+.sct-js .sct-testimonial[data-sct-card]:hover {
+	box-shadow: var( --sct-shadow-lift );
+	transform: translateY( -3px );
+}
+
+.sct-testimonial:focus-within {
+	box-shadow: var( --sct-shadow-lift );
+}
+
+/* Media area keeps a fixed ratio on every card, photo or monogram, because uniform
+   card height depends on this block never varying. */
+.sct-testimonial__media {
+	position: relative;
+	z-index: 0;
+	flex: none;
+	aspect-ratio: 4 / 3;
+	overflow: hidden;
+	background: #f1f3f6;
+}
+
+.sct-testimonial__media img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 400ms ease;
+}
+
+.sct-js .sct-testimonial[data-sct-card]:hover .sct-testimonial__media img {
+	transform: scale( 1.035 );
+}
+
+.sct-testimonial__media--monogram {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient( 140deg, #eef1f6 0%, #dfe4ec 55%, #d3dae6 100% );
+}
+
+.sct-testimonial__media--monogram span {
+	font-size: 2.1rem;
+	font-weight: 650;
+	letter-spacing: 0.04em;
+	color: rgba( 15, 23, 42, 0.34 );
+}
+
+.sct-testimonial__body {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	gap: 0.6rem;
+	padding: 1.15rem 1.2rem 1.2rem;
+}
+
+.sct-rating {
+	display: block;
+	line-height: 1;
+	color: var( --sct-star );
+	letter-spacing: 0.09em;
+}
+
+.sct-star {
+	font-size: 0.92rem;
+}
+
+/* Reserving the clamp height is what makes short reviews occupy the same card height
+   as long ones, so the grid reads as a uniform set rather than a ragged mosaic. */
+.sct-testimonial__quote {
+	margin: 0;
+	font-size: 0.955rem;
+	line-height: var( --sct-quote-lh );
+	color: #23292f;
+}
+
+.sct-js .sct-testimonial__quote {
+	min-height: calc( var( --sct-lines, 5 ) * var( --sct-quote-lh ) * 1em );
+	display: -webkit-box;
+	-webkit-line-clamp: var( --sct-lines, 5 );
+	line-clamp: var( --sct-lines, 5 );
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	/* Preserve the reviewer's paragraph breaks; client wording stays verbatim. */
+	white-space: pre-line;
+}
+
+.sct-testimonial__by {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.45rem;
+	/* Pinned to the bottom so attribution lines up across every card in the row. */
+	margin-block-start: auto;
+	font-size: 0.86rem;
+}
+
+.sct-testimonial__name {
+	font-weight: 650;
+	letter-spacing: -0.005em;
+}
+
+.sct-testimonial__date {
+	color: var( --sct-muted );
+	font-size: 0.8rem;
+}
+
+.sct-testimonial__date::before {
+	content: "\00b7";
+	margin-inline-end: 0.45rem;
+}
+
+/* Open control stays hidden until script is present, because a dialog cannot be opened
+   without JavaScript and a dead button is worse than no button. */
+.sct-testimonial__open {
+	display: none;
+}
+
+.sct-js .sct-testimonial__open {
+	display: block;
+	width: 100%;
+	padding: 0.72rem 1.2rem;
+	border: 0;
+	border-block-start: 1px solid var( --sct-line );
+	background: transparent;
+	font: inherit;
+	font-size: 0.82rem;
+	font-weight: 620;
+	color: var( --sct-muted );
+	text-align: start;
+	cursor: pointer;
+	transition: color 160ms ease, background-color 160ms ease;
+}
+
+.sct-js .sct-testimonial__open:hover,
+.sct-js .sct-testimonial__open:focus-visible {
+	color: #111827;
+	background: rgba( 15, 23, 42, 0.035 );
+}
+
+.sct-testimonial__open:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: -2px;
+}
+
+/* Source attribution. Held visually apart from the stars above because Google's brand
+   rules forbid placing stars beside the Google name or logo. */
+.sct-source {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.35rem;
+	margin: 0;
+	padding-block-start: 0.6rem;
+	border-block-start: 1px solid var( --sct-line );
+	font-size: 0.735rem;
+	line-height: 1.45;
+	color: var( --sct-muted );
+}
+
+.sct-source__mark {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	color: #4285f4;
+}
+
+.sct-source__mark svg {
+	display: block;
+}
+
+.sct-source__link {
+	color: inherit;
+	text-decoration: underline;
+	text-underline-offset: 0.16em;
+}
+
+.sct-source__link:hover,
+.sct-source__link:focus-visible {
+	color: #111827;
+}
+
+/* Dialog. */
+.sct-dialog {
+	width: min( 92vw, 620px );
+	max-height: 88vh;
+	padding: 0;
+	border: 0;
+	border-radius: var( --sct-radius );
+	background: #fff;
+	box-shadow: 0 24px 70px -20px rgba( 15, 23, 42, 0.45 );
+	color: #1b2027;
+	overflow: hidden;
+}
+
+.sct-dialog::backdrop {
+	background: rgba( 15, 23, 42, 0.55 );
+	backdrop-filter: blur( 3px );
+}
+
+.sct-dialog[open] {
+	animation: sct-pop 200ms ease;
+}
+
+@keyframes sct-pop {
+	from {
+		opacity: 0;
+		transform: translateY( 10px ) scale( 0.985 );
+	}
+}
+
+.sct-dialog__inner {
+	position: relative;
+	max-height: 88vh;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.sct-dialog__media img {
+	display: block;
+	width: 100%;
+	max-height: 46vh;
+	object-fit: cover;
+}
+
+.sct-dialog__close {
+	position: absolute;
+	inset-block-start: 0.7rem;
+	inset-inline-end: 0.7rem;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.1rem;
+	height: 2.1rem;
+	border: 0;
+	border-radius: 999px;
+	background: rgba( 255, 255, 255, 0.92 );
+	box-shadow: 0 2px 10px rgba( 15, 23, 42, 0.22 );
+	font-size: 1.15rem;
+	line-height: 1;
+	color: #1b2027;
+	cursor: pointer;
+}
+
+.sct-dialog__close:hover,
+.sct-dialog__close:focus-visible {
+	background: #fff;
+}
+
+.sct-dialog__close:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+.sct-dialog__content {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+	padding: 1.5rem 1.55rem 1.7rem;
+}
+
+.sct-dialog__heading {
+	margin: 0;
+	font-size: 1.06rem;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+}
+
+.sct-dialog__quote {
+	margin: 0;
+	font-size: 1rem;
+	line-height: 1.62;
+	white-space: pre-line;
+}
+
+.sct-dialog__by {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0.5rem;
+	font-size: 0.88rem;
+}
+
+.sct-dialog__name {
+	font-weight: 650;
+}
+
+.sct-dialog__date {
+	color: var( --sct-muted );
+	font-size: 0.82rem;
+}
+
+/* View more. */
+.sct-testimonials__more {
+	display: flex;
+	justify-content: center;
+	margin-block-start: 1.75rem;
+}
+
+.sct-more {
+	padding: 0.68rem 1.6rem;
+	border: 1px solid rgba( 15, 23, 42, 0.16 );
+	border-radius: 999px;
+	background: #fff;
+	box-shadow: var( --sct-shadow );
+	font: inherit;
+	font-size: 0.87rem;
+	font-weight: 620;
+	color: #1b2027;
+	cursor: pointer;
+	transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.sct-more:hover,
+.sct-more:focus-visible {
+	box-shadow: var( --sct-shadow-lift );
+	transform: translateY( -1px );
+}
+
+.sct-more:focus-visible {
+	outline: 2px solid #2563eb;
+	outline-offset: 2px;
+}
+
+/* Live region: available to assistive technology, out of the visual flow. */
+.sct-live {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect( 0, 0, 0, 0 );
+	white-space: nowrap;
+	border: 0;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+	.sct-testimonial,
+	.sct-testimonial__media img,
+	.sct-more,
+	.sct-testimonial__open {
+		transition: none;
+	}
+
+	.sct-js .sct-testimonial[data-sct-card]:hover {
+		transform: none;
+	}
+
+	.sct-dialog[open] {
+		animation: none;
+	}
+}
