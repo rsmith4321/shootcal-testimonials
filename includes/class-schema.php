@@ -127,17 +127,18 @@ class Schema {
 
 		$graph = $reviews;
 
-		// An aggregate is only emitted when every rating shown is real and the site
-		// records an "as of" date, which Google's marketing rules require whenever an
-		// overall rating or review count is displayed.
-		if ( array() !== $ratings && '' !== trim( (string) Config::get( 'rating_as_of', '' ) ) ) {
+		// Only ratings captured here contribute to the average. A review without a
+		// score still counts as a review, so keep ratingCount and reviewCount distinct.
+		$as_of = (string) Config::get( 'rating_as_of', '' );
+		if ( array() !== $ratings && Config::valid_as_of_date( $as_of ) ) {
 			$graph[] = array(
 				'@type'          => $entity_type,
 				'name'           => $name,
 				'aggregateRating' => array(
 					'@type'       => 'AggregateRating',
 					'ratingValue' => round( array_sum( $ratings ) / count( $ratings ), 1 ),
-					'reviewCount' => count( $ratings ),
+					'ratingCount' => count( $ratings ),
+					'reviewCount' => count( $reviews ),
 					'bestRating'  => 5,
 					'worstRating' => 1,
 				),

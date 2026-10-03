@@ -20,6 +20,16 @@ defined( 'ABSPATH' ) || exit;
  */
 class Config {
 
+	/** Accept a real ISO calendar date, not merely a nonempty value. */
+	public static function valid_as_of_date( string $value ): bool {
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/D', $value ) ) { return false; }
+		$date = \DateTimeImmutable::createFromFormat( '!Y-m-d', $value );
+		return $date instanceof \DateTimeImmutable
+			&& $date->format( 'Y-m-d' ) === $value
+			&& '0000' !== substr( $value, 0, 4 )
+			&& $value <= current_time( 'Y-m-d' );
+	}
+
 	/**
 	 * Option defaults.
 	 *
@@ -35,8 +45,8 @@ class Config {
 			'schema_enabled'    => false,
 			'schema_entity'     => 'LocalBusiness',
 			'business_name'     => '',
-			// Required by Google's marketing rules whenever an overall rating or review
-			// count is displayed: an "as of" date.
+			// Site-entered date for the optional aggregate; malformed dates must never
+			// enable rating markup.
 			'rating_as_of'      => '',
 
 			'default_columns'   => 3,

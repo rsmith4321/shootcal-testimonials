@@ -4,7 +4,7 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.6.1
+Stable tag: 0.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,8 @@ Or the bundled Gutenberg block, which is dynamic and renders through exactly the
 
 `[shootcal_testimonial_form]` renders an accessible form that creates a **pending** testimonial. Nothing goes live until an editor publishes it. Submissions are protected by a nonce, a honeypot field, and a per-IP cooldown, and every input is sanitized server side. The form grants no capability, never trusts the client for post status or author, and makes no outbound request. Add `mode="dialog"` to render a button instead, opening the same form in a modal dialog; `button_label` names that button. With script disabled the button is a plain link to the form rendered in place, and validation failures or a waiting confirmation always render in place too, so the dialog never hides anything the submitter needs to read.
 
+Place the form in page content or a synced pattern for automatic page-cache protection. If your theme renders it from a template or widget, exclude that page from full-page caching so a saved page cannot serve an expired form token or another visitor's confirmation.
+
 **Source attribution**
 
 Only Google-sourced testimonials get a brand mark and the "Originally posted on Google" label. Other platforms get a plain text credit, so the plugin never renders a third-party brand it holds no usage guidance for. The star row is off by default and opt-in under Testimonial Settings, because a page of your own reviews covered in stars reads as spammy. When enabled, stars are rendered in the card body, deliberately separate from the credit line, because Google's brand rules forbid placing stars beside the Google name or logo.
@@ -68,7 +70,7 @@ Only Google-sourced testimonials get a brand mark and the "Originally posted on 
 
 Google treats reviews of your own business hosted on your own site as self-serving, which makes them ineligible for star rich results. Its guidelines also prohibit aggregating reviews or ratings from other websites, and warn that violating them can draw a manual action. A testimonial page republishing your own Google reviews meets both conditions, so emitting `Review` or `AggregateRating` markup there is a risk with no rich-result upside.
 
-The toggle exists for the legitimate case: a directory-style site reviewing other businesses using ratings collected directly from its own users. When enabled, markup is emitted only for testimonials actually rendered on the current page, and an aggregate is only emitted when you have recorded an "as of" date, which Google's marketing rules require whenever an overall rating or review count is displayed.
+The toggle exists for the legitimate case: a directory-style site reviewing other businesses using ratings collected directly from its own users. When enabled, markup is emitted only for testimonials actually rendered on the current page, and an aggregate is only emitted when you have recorded a valid date for when you checked those ratings.
 
 **Migration**
 
@@ -109,7 +111,7 @@ No. It is written to `_sct_submitter_email`, which is never passed to `register_
 
 = How do I show different categories on two URLs from one page? =
 
-Add `allow_query="on"` to the shortcode, or switch on "Allow a URL parameter to override these categories" in the block. A `?sct_category=slug` parameter then replaces the configured categories. Unknown or empty values are ignored and fall back to the configured filter. Note that a page using this must not be served from a page cache keyed on the path alone, or every visitor sees whichever variant was cached first.
+Add `allow_query="on"` to the shortcode, or switch on "Allow a URL parameter to override these categories" in the block. A `?sct_category=slug` parameter then replaces the configured categories. The selector's `?sct_category=` link shows all reviews; an unknown slug falls back to the configured filter. A page using this must not be served from a page cache keyed on the path alone, or every visitor sees whichever variant was cached first.
 
 = Does the block need a build step? =
 
@@ -121,7 +123,7 @@ Nothing. Uninstalling removes the plugin's options only. Testimonials, their pho
 
 = Is the Google mark the official asset? =
 
-Yes. The bundled gradient Google G was downloaded unmodified from Google’s official Partner Marketing Hub. It uses clear space equal to the mark width and remains separate from ratings. A source link may lead to the review listing or reviewer profile, so the linked “Originally posted on” label identifies its platform without claiming a specific review permalink.
+Yes. The bundled gradient Google G comes from Google's FirebaseUI project under the included Apache-2.0 license. It remains separate from ratings. A source link may lead to the review listing or reviewer profile, so the linked “Originally posted on” label identifies its platform without claiming a specific review permalink.
 
 = I use a performance plugin (Perfmatters, WP Rocket, LiteSpeed Cache, Autoptimize) and the cards look unstyled or the dialog misbehaves. =
 
@@ -129,9 +131,16 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 
 = How many testimonials can one list show? =
 
-Sixty per list. With View more enabled the default total held behind the button is twenty four. Both are page-weight guards rather than design constraints.
+Sixty per list. New installations show 21 initially; with View more enabled, the default total available behind the button is 60. Saved site and block settings are preserved. The ceiling is a page-weight guard rather than a design constraint.
 
 == Changelog ==
+
+= 0.6.2 =
+* Fix single-review lists and make the category selector's All reviews link clear a preset filter.
+* Make the no-script form link reach its inline form and protect forms in synced patterns from page caching.
+* Harden custom SVG colors and use write-free acknowledgements for automated form submissions.
+* Make interrupted legacy imports safely resumable without duplicating or publishing a partial review.
+* Correct saved View more limits, translate progress announcements, and validate dates used for optional aggregate data.
 
 = 0.6.1 =
 * Fix: Remove the extra card-body padding below source attribution so it sits evenly above Read full review.

@@ -23,8 +23,10 @@
  *   identity and every derivative already on disk are preserved.
  * - Preserves post_date and post_date_gmt exactly. WordPress replaces a backdated
  *   post_date on publish unless edit_date is passed, so both writes restate the date.
- * - Idempotent. Each imported record stores its source post ID in sct_legacy_id and a run
- *   skips anything already imported, so it is safe to rerun.
+ * - Idempotent. A new record starts as a draft with a deterministic slug, a legacy ID and
+ *   an in-progress marker. A rerun can resume a partial write without inserting another
+ *   post. The completion marker is written only after read-back verification. Imports
+ *   made by older versions have no state marker and are left untouched on rerun.
  * - Reviewer email (_aditional_info_email) and private owner notes (_answer_info_notes)
  *   are deliberately not carried across. That is a privacy decision, not an omission.
  * - Editor and plugin cruft (_edit_lock, Jetpack cache, AMP meta, slide_template) is not
@@ -73,6 +75,27 @@ foreach ( $cli_args as $arg ) {
 
 $source_type = 'ttshowcase';
 $target_type = 'sct_testimonial';
+$identity_key = 'sct_legacy_id';
+$state_key = 'sct_import_state';
+$snapshot_key = 'sct_import_core_snapshot';
+
+/** A snapshot detects edits to a draft left by an interrupted import. */
+$core_snapshot = static function ( \WP_Post $post ): string {
+	return hash(
+		'sha256',
+		wp_json_encode( array(
+			$post->post_title,
+			$post->post_content,
+			$post->post_excerpt,
+			$post->post_status,
+			$post->post_date,
+			$post->post_date_gmt,
+			$post->post_author,
+			$post->post_modified,
+			$post->post_modified_gmt,
+		) )
+	);
+};
 
 if ( ! post_type_exists( $source_type ) ) {
 	fwrite( STDERR, "Source post type '{$source_type}' is not registered. Is Testimonials Showcase active?\n" );
@@ -169,7 +192,8 @@ $report = array(
 	'receipt_overrides' => count( $overrides ),
 );
 
-// Index what has already been imported so a rerun cannot duplicate anything.
+// Index every status, including Trash, before writing. A duplicate legacy identity is
+// ambiguous: stop rather than choosing one target and accidentally editing the other.
 $already  = array();
 $existing = get_posts(
 	array(
@@ -184,9 +208,12 @@ $existing = get_posts(
 );
 
 foreach ( $existing as $existing_id ) {
-	$legacy = get_post_meta( (int) $existing_id, 'sct_legacy_id', true );
+	$legacy = get_post_meta( (int) $existing_id, $identity_key, true );
 
 	if ( '' !== $legacy && null !== $legacy ) {
+		if ( isset( $already[ (string) $legacy ] ) ) {
+			WP_CLI::error( 'Legacy review ' . $legacy . ' maps to multiple ShootCal reviews; resolve the duplicate before importing.' );
+		}
 		$already[ (string) $legacy ] = (int) $existing_id;
 	}
 }
@@ -260,6 +287,8 @@ $report['terms_mapped'] = count( $term_map );
 $report['terms_new']    = $new_terms;
 
 $imported     = 0;
+$resumed      = 0;
+$would_resume = 0;
 $skipped      = array();
 $no_photo     = 0;
 $pending      = 0;
@@ -277,11 +306,18 @@ $provenance   = array();
 
 foreach ( $source_posts as $source ) {
 	$source_id = (int) $source->ID;
+	$existing_id = $already[ (string) $source_id ] ?? 0;
+	$import_state = $existing_id ? (string) get_post_meta( $existing_id, $state_key, true ) : '';
 
-	if ( isset( $already[ (string) $source_id ] ) ) {
+	if ( $existing_id && ! in_array( $import_state, array( '', 'pending', 'complete' ), true ) ) {
+		WP_CLI::error( 'Review ' . $existing_id . ' has an unknown import state; no writes performed for this record.' );
+	}
+	// Older imports have no state marker. They may have been edited since migration,
+	// so never compare them to the legacy source or overwrite their authored changes.
+	if ( $existing_id && 'pending' !== $import_state ) {
 		$skipped[] = array(
 			'source_id' => $source_id,
-			'reason'    => 'already imported as ' . $already[ (string) $source_id ],
+			'reason'    => 'already imported as ' . $existing_id,
 		);
 		continue;
 	}
@@ -380,54 +416,100 @@ foreach ( $source_posts as $source ) {
 	if ( 'pending' === $source->post_status ) {
 		++$pending;
 	}
+	$source_terms = wp_get_object_terms( $source_id, 'ttshowcase_groups', array( 'fields' => 'ids' ) );
+	if ( is_wp_error( $source_terms ) ) {
+		WP_CLI::error( 'Unable to read categories for legacy review ' . $source_id . ': ' . $source_terms->get_error_message() );
+	}
+	$target_terms = array();
+	foreach ( $source_terms as $source_term_id ) {
+		if ( empty( $term_map[ (int) $source_term_id ] ) && $apply ) {
+			WP_CLI::error( 'No target category mapped for legacy review ' . $source_id . '; no review post created.' );
+		}
+		if ( ! empty( $term_map[ (int) $source_term_id ] ) ) {
+			$target_terms[] = (int) $term_map[ (int) $source_term_id ];
+		}
+	}
+	$target_terms = array_values( array_unique( $target_terms ) );
+	sort( $target_terms );
+
+	// The deterministic slug catches the narrow case where a process stops after
+	// inserting a post but before WordPress writes its meta_input identity. Never
+	// claim an unrelated authored post merely because its slug collides.
+	$import_slug = 'sct-import-ttshowcase-' . $source_id;
+	if ( ! $existing_id && get_page_by_path( $import_slug, OBJECT, $target_type ) ) {
+		WP_CLI::error( 'A review already uses import slug ' . $import_slug . ' without a matching legacy ID; inspect it before retrying.' );
+	}
 
 	if ( ! $apply ) {
-		++$imported;
+		if ( $existing_id ) { ++$would_resume; } else { ++$imported; }
 		continue;
 	}
 
-	$new_id = wp_insert_post(
-		wp_slash( array(
-			'post_type'     => $target_type,
-			'post_title'    => $name,
-			'post_content'  => $quote,
-			'post_excerpt'  => (string) $source->post_excerpt,
-			'post_status'   => $source->post_status,
-			'post_date'     => $source->post_date,
-			'post_date_gmt' => $source->post_date_gmt,
-			'post_author'   => (int) $source->post_author,
-			'edit_date'     => true,
-		) ),
-		true
-	);
-
-	if ( is_wp_error( $new_id ) ) {
-		WP_CLI::error( 'Import failed for legacy review ' . $source_id . ': ' . $new_id->get_error_message() );
+	if ( $existing_id ) {
+		$new_id = (int) $existing_id;
+	} else {
+		// A partial import is never public. meta_input writes its identity and state
+		// during insertion, and the slug protects the even smaller pre-meta gap.
+		$new_id = wp_insert_post(
+			wp_slash( array(
+				'post_type'     => $target_type,
+				'post_name'     => $import_slug,
+				'post_title'    => $name,
+				'post_content'  => $quote,
+				'post_excerpt'  => (string) $source->post_excerpt,
+				'post_status'   => 'draft',
+				'post_date'     => $source->post_date,
+				'post_date_gmt' => $source->post_date_gmt,
+				'post_author'   => (int) $source->post_author,
+				'edit_date'     => true,
+				'meta_input'    => array( $identity_key => $source_id, $state_key => 'pending' ),
+			) ),
+			true
+		);
+		if ( is_wp_error( $new_id ) || (int) $new_id <= 0 ) {
+			$message = is_wp_error( $new_id ) ? $new_id->get_error_message() : 'WordPress returned no post ID.';
+			WP_CLI::error( 'Import failed for legacy review ' . $source_id . ': ' . $message );
+		}
+		$new_id = (int) $new_id;
+		$new_post = get_post( $new_id );
+		if ( ! $new_post instanceof \WP_Post || $import_slug !== $new_post->post_name ||
+			(int) get_post_meta( $new_id, $identity_key, true ) !== $source_id ||
+			'pending' !== get_post_meta( $new_id, $state_key, true ) ) {
+			WP_CLI::error( 'Review ' . $new_id . ' was created without its expected import identity/state; inspect it before retrying.' );
+		}
+		update_post_meta( $new_id, $snapshot_key, $core_snapshot( $new_post ) );
+		if ( ! metadata_exists( 'post', $new_id, $snapshot_key ) ) {
+			WP_CLI::error( 'Unable to save the import snapshot for review ' . $new_id . '; inspect it before retrying.' );
+		}
 	}
 
-	$new_id = (int) $new_id;
+	$new_post = get_post( $new_id );
+	if ( ! $new_post instanceof \WP_Post ||
+		$new_post->post_title !== $name || $new_post->post_content !== $quote ||
+		$new_post->post_excerpt !== (string) $source->post_excerpt ||
+		(int) $new_post->post_author !== (int) $source->post_author ) {
+		WP_CLI::error( 'In-progress review ' . $new_id . ' has different authored content; inspect it before retrying.' );
+	}
+	$final_core = $new_post->post_status === $source->post_status &&
+		$new_post->post_date === $source->post_date && $new_post->post_date_gmt === $source->post_date_gmt;
+	if ( ! $final_core && ( 'draft' !== $new_post->post_status ||
+		'' === (string) get_post_meta( $new_id, $snapshot_key, true ) ||
+		$core_snapshot( $new_post ) !== get_post_meta( $new_id, $snapshot_key, true ) ) ) {
+		WP_CLI::error( 'In-progress review ' . $new_id . ' changed after insertion; inspect its status/date before retrying.' );
+	}
 
-	// Restate the date, because publishing a backdated post can reset it.
-	$date_result = wp_update_post(
-		array(
-			'ID'            => $new_id,
-			'post_date'     => $source->post_date,
-			'post_date_gmt' => $source->post_date_gmt,
-			'edit_date'     => true,
-		), true
+	// Only fill missing fields on a pending import. A different existing value may
+	// be an editor's correction, so stop instead of overwriting it.
+	$expected_meta = array(
+		'sct_source'        => $src,
+		'sct_source_lookup' => $lookup,
+		'sct_source_note'   => $src_note,
 	);
-	if ( is_wp_error( $date_result ) ) { WP_CLI::error( 'Review created but date preservation failed for ' . $new_id ); }
-
-	update_post_meta( $new_id, 'sct_legacy_id', $source_id );
-	update_post_meta( $new_id, 'sct_source', $src );
-	update_post_meta( $new_id, 'sct_source_lookup', $lookup );
-	update_post_meta( $new_id, 'sct_source_note', wp_slash( $src_note ) );
-
 	foreach ( $meta_map as $from => $to ) {
 		$value = get_post_meta( $source_id, $from, true );
 
 		if ( '' !== $value && null !== $value ) {
-			update_post_meta( $new_id, $to, wp_slash( $value ) );
+			$expected_meta[ $to ] = $value;
 		}
 	}
 
@@ -435,33 +517,90 @@ foreach ( $source_posts as $source ) {
 		$value = get_post_meta( $source_id, $from, true );
 
 		if ( '' !== $value && null !== $value ) {
-			update_post_meta( $new_id, $to, wp_slash( $value ) );
+			$expected_meta[ $to ] = $value;
+		}
+	}
+	foreach ( $expected_meta as $key => $value ) {
+		if ( metadata_exists( 'post', $new_id, $key ) && get_post_meta( $new_id, $key, true ) !== $value ) {
+			WP_CLI::error( 'In-progress review ' . $new_id . ' has a different ' . $key . '; inspect it before retrying.' );
+		}
+		if ( ! metadata_exists( 'post', $new_id, $key ) ) {
+			update_post_meta( $new_id, $key, wp_slash( $value ) );
+		}
+		if ( ! metadata_exists( 'post', $new_id, $key ) || get_post_meta( $new_id, $key, true ) !== $value ) {
+			WP_CLI::error( 'Unable to preserve ' . $key . ' on review ' . $new_id . '; retry after checking storage.' );
 		}
 	}
 
 	// Reuse the existing attachment. No file is copied, re-uploaded or regenerated.
-	if ( $thumbnail > 0 && 'attachment' === get_post_type( $thumbnail ) ) {
-		set_post_thumbnail( $new_id, $thumbnail );
+	$expected_thumbnail = $thumbnail > 0 && 'attachment' === get_post_type( $thumbnail ) ? $thumbnail : 0;
+	$current_thumbnail = (int) get_post_thumbnail_id( $new_id );
+	if ( $current_thumbnail && $current_thumbnail !== $expected_thumbnail ) {
+		WP_CLI::error( 'In-progress review ' . $new_id . ' has a different photo; inspect it before retrying.' );
+	}
+	if ( $expected_thumbnail && ! $current_thumbnail ) {
+		set_post_thumbnail( $new_id, $expected_thumbnail );
+	}
+	if ( (int) get_post_thumbnail_id( $new_id ) !== $expected_thumbnail ) {
+		WP_CLI::error( 'Unable to preserve the photo on review ' . $new_id . '; retry after checking storage.' );
 	}
 
-	$source_terms = wp_get_object_terms( $source_id, 'ttshowcase_groups', array( 'fields' => 'ids' ) );
-
-	if ( ! is_wp_error( $source_terms ) && array() !== $source_terms ) {
-		$target_terms = array();
-
-		foreach ( $source_terms as $source_term_id ) {
-			if ( ! empty( $term_map[ (int) $source_term_id ] ) ) {
-				$target_terms[] = (int) $term_map[ (int) $source_term_id ];
-			}
-		}
-
-		if ( array() !== $target_terms ) {
-			$assigned = wp_set_object_terms( $new_id, $target_terms, 'sct_category' );
-			if ( is_wp_error( $assigned ) ) { WP_CLI::error( 'Review imported but category assignment failed for ' . $new_id ); }
-		}
+	$current_terms = wp_get_object_terms( $new_id, 'sct_category', array( 'fields' => 'ids' ) );
+	if ( is_wp_error( $current_terms ) ) { WP_CLI::error( 'Cannot read categories on review ' . $new_id ); }
+	$current_terms = array_map( 'intval', $current_terms );
+	sort( $current_terms );
+	if ( array() !== $current_terms && $current_terms !== $target_terms ) {
+		WP_CLI::error( 'In-progress review ' . $new_id . ' has different categories; inspect them before retrying.' );
+	}
+	if ( array() === $current_terms && array() !== $target_terms ) {
+		$assigned = wp_set_object_terms( $new_id, $target_terms, 'sct_category' );
+		if ( is_wp_error( $assigned ) ) { WP_CLI::error( 'Category assignment failed for review ' . $new_id . ': ' . $assigned->get_error_message() ); }
+	}
+	$stored_terms = wp_get_object_terms( $new_id, 'sct_category', array( 'fields' => 'ids' ) );
+	if ( is_wp_error( $stored_terms ) ) { WP_CLI::error( 'Cannot verify categories on review ' . $new_id ); }
+	$stored_terms = array_map( 'intval', $stored_terms );
+	sort( $stored_terms );
+	if ( $stored_terms !== $target_terms ) {
+		WP_CLI::error( 'Categories did not persist on review ' . $new_id . '; it remains an in-progress draft for a safe retry.' );
 	}
 
-	++$imported;
+	if ( ! $final_core ) {
+		// Publishing can reset a backdated date. Restate both dates as part of the
+		// final status transition, after all other fields have been verified.
+		$finalized = wp_update_post( array(
+			'ID'            => $new_id,
+			'post_status'   => $source->post_status,
+			'post_date'     => $source->post_date,
+			'post_date_gmt' => $source->post_date_gmt,
+			'edit_date'     => true,
+		), true );
+		if ( is_wp_error( $finalized ) || (int) $finalized <= 0 ) {
+			WP_CLI::error( 'Review ' . $new_id . ' remains in progress because its final status/date could not be saved.' );
+		}
+	}
+	$verified_post = get_post( $new_id );
+	if ( ! $verified_post instanceof \WP_Post || $verified_post->post_status !== $source->post_status ||
+		$verified_post->post_date !== $source->post_date || $verified_post->post_date_gmt !== $source->post_date_gmt ) {
+		WP_CLI::error( 'Review ' . $new_id . ' has an incorrect final status/date; it remains in progress.' );
+	}
+	$verified_terms = wp_get_object_terms( $new_id, 'sct_category', array( 'fields' => 'ids' ) );
+	if ( is_wp_error( $verified_terms ) ) { WP_CLI::error( 'Cannot verify final categories on review ' . $new_id ); }
+	$verified_terms = array_map( 'intval', $verified_terms );
+	sort( $verified_terms );
+	if ( $verified_terms !== $target_terms || (int) get_post_thumbnail_id( $new_id ) !== $expected_thumbnail ) {
+		WP_CLI::error( 'The final categories or photo changed on review ' . $new_id . '; it remains in progress.' );
+	}
+	foreach ( $expected_meta as $key => $value ) {
+		if ( ! metadata_exists( 'post', $new_id, $key ) || get_post_meta( $new_id, $key, true ) !== $value ) {
+			WP_CLI::error( 'The final ' . $key . ' changed on review ' . $new_id . '; it remains in progress.' );
+		}
+	}
+	update_post_meta( $new_id, $state_key, 'complete' );
+	if ( 'complete' !== get_post_meta( $new_id, $state_key, true ) ) {
+		WP_CLI::error( 'Review ' . $new_id . ' could not be marked complete; retry without creating a duplicate.' );
+	}
+	$already[ (string) $source_id ] = $new_id;
+	if ( $existing_id ) { ++$resumed; } else { ++$imported; }
 }
 
 ksort( $source_table );
@@ -469,6 +608,8 @@ ksort( $pair_table );
 
 $report['would_import']    = $apply ? null : $imported;
 $report['imported']        = $apply ? $imported : null;
+$report['would_resume']    = $apply ? null : $would_resume;
+$report['resumed']         = $apply ? $resumed : null;
 $report['skipped']         = $skipped;
 $report['skipped_count']   = count( $skipped );
 $report['without_photo']   = $no_photo;
@@ -515,6 +656,7 @@ if ( $apply ) {
 
 	$audit = array(
 		'total'          => count( $audit_ids ),
+		'incomplete_state' => array(),
 		'empty_source'   => array(),
 		'empty_lookup'   => array(),
 		'invalid_lookup' => array(),
@@ -526,6 +668,9 @@ if ( $apply ) {
 		$audit_id = (int) $audit_id;
 		$a_src    = (string) get_post_meta( $audit_id, 'sct_source', true );
 		$a_lookup = (string) get_post_meta( $audit_id, 'sct_source_lookup', true );
+		if ( 'pending' === get_post_meta( $audit_id, $state_key, true ) ) {
+			$audit['incomplete_state'][] = $audit_id;
+		}
 
 		if ( '' === trim( $a_src ) ) {
 			$audit['empty_source'][] = $audit_id;
@@ -548,6 +693,9 @@ if ( $apply ) {
 	$report['stored_audit'] = $audit;
 
 	$hard_failures = array();
+	if ( array() !== $audit['incomplete_state'] ) {
+		$hard_failures[] = 'records still in progress: ' . count( $audit['incomplete_state'] );
+	}
 
 	if ( array() !== $audit['empty_source'] ) {
 		$hard_failures[] = 'records with empty sct_source: ' . count( $audit['empty_source'] );

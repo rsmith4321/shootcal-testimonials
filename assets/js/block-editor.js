@@ -289,7 +289,9 @@
 		var total   = 'number' === typeof attributes.total ? attributes.total : DEF_TOTAL;
 		var columns = 'number' === typeof attributes.columns ? attributes.columns : DEF_COLUMNS;
 		var lines   = 'number' === typeof attributes.lines ? attributes.lines : DEF_LINES;
-		var more    = attributes.more || DEF_MORE;
+		var more    = count >= CEILING ? 'hide' : ( attributes.more || DEF_MORE );
+		var totalMin = Math.min( count + 1, CEILING );
+		var shownTotal = Math.max( totalMin, Math.min( total, CEILING ) );
 
 		return createElement(
 			Fragment,
@@ -322,7 +324,14 @@
 						max: CEILING,
 						__nextHasNoMarginBottom: true,
 						onChange: function ( value ) {
-							setAttributes( { count: value } );
+							var next = { count: value };
+							if ( value >= CEILING ) {
+								next.more = 'hide';
+								next.total = CEILING;
+							} else if ( 'number' === typeof attributes.total && attributes.total <= value ) {
+								next.total = value + 1;
+							}
+							setAttributes( next );
 						}
 					} ),
 					createElement( SelectControl, {
@@ -342,6 +351,7 @@
 					createElement( SelectControl, {
 						label: __( 'View more', 'shootcal-testimonials' ),
 						value: more,
+						disabled: count >= CEILING,
 						options: [
 							{ label: __( 'Show the list only', 'shootcal-testimonials' ), value: 'hide' },
 							{ label: __( 'Show a View more button', 'shootcal-testimonials' ), value: 'show' }
@@ -351,12 +361,12 @@
 							setAttributes( { more: value } );
 						}
 					} ),
-					'show' === more
+					'show' === more && count < CEILING
 						? createElement( RangeControl, {
 							label: __( 'Total reviews available', 'shootcal-testimonials' ),
 							help: __( 'Shows at least 9 more reviews per click, or the remaining reviews when fewer are left.', 'shootcal-testimonials' ),
-							value: total,
-							min: count + 1,
+							value: shownTotal,
+							min: totalMin,
 							max: CEILING,
 							__nextHasNoMarginBottom: true,
 							onChange: function ( value ) {

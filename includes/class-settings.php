@@ -74,7 +74,8 @@ class Settings {
 			return isset( $_POST[ $key ] ) && is_scalar( $_POST[ $key ] ) ? wp_unslash( (string) $_POST[ $key ] ) : $fallback;
 		};
 		$next['business_name'] = sanitize_text_field( $scalar( 'business_name' ) );
-		$next['rating_as_of'] = sanitize_text_field( $scalar( 'rating_as_of' ) );
+		$as_of = trim( $scalar( 'rating_as_of' ) );
+		$next['rating_as_of'] = Config::valid_as_of_date( $as_of ) ? $as_of : '';
 		$next['default_columns'] = Config::normalize_columns( $scalar( 'default_columns', '3' ) );
 		$next['default_count'] = max( 1, min( Shortcode::CEILING, (int) $scalar( 'default_count', '21' ) ) );
 		$next['default_more'] = 'show' === $scalar( 'default_more' ) ? 'show' : 'hide';
@@ -160,7 +161,7 @@ class Settings {
 						<td>
 							<label><input type="radio" name="default_more" value="show" <?php checked( Config::get( 'default_more' ), 'show' ); ?> /> <?php esc_html_e( 'Show a View more button', 'shootcal-testimonials' ); ?></label><br />
 							<label><input type="radio" name="default_more" value="hide" <?php checked( Config::get( 'default_more' ), 'hide' ); ?> /> <?php esc_html_e( 'Show the list only', 'shootcal-testimonials' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Reveals one row of already-rendered cards per click. It makes no request, so a visitor click cannot trigger a database or provider query.', 'shootcal-testimonials' ); ?></p>
+								<p class="description"><?php esc_html_e( 'Reveals at least nine already-rendered cards per click, rounding up to complete rows when possible. A visitor click makes no database or provider request.', 'shootcal-testimonials' ); ?></p>
 						</td>
 					</tr>
 				</table>
@@ -232,7 +233,7 @@ class Settings {
 						<th scope="row"><label for="rating_as_of"><?php esc_html_e( 'Rating "as of" date', 'shootcal-testimonials' ); ?></label></th>
 						<td>
 							<input type="text" class="regular-text" name="rating_as_of" id="rating_as_of" value="<?php echo esc_attr( (string) Config::get( 'rating_as_of', '' ) ); ?>" placeholder="2026-10-01" />
-							<p class="description"><?php esc_html_e( 'Required by Google whenever an overall rating or review count is displayed. An aggregate is only emitted when this is set.', 'shootcal-testimonials' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Enter the date you checked the ratings, in YYYY-MM-DD format. Use today or an earlier date. Optional aggregate data is shown only when this is a valid date.', 'shootcal-testimonials' ); ?></p>
 						</td>
 					</tr>
 				</table>

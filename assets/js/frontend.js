@@ -198,7 +198,11 @@
 			var remaining = section.querySelectorAll( '.sct-testimonial--hidden' ).length;
 			var total = section.querySelectorAll( '.sct-testimonial' ).length;
 
-			live.textContent = ( total - remaining ) + ' of ' + total + ' testimonials shown';
+			var shown = total - remaining;
+			var messages = window.sctFrontend || {};
+			var template = shown === 1 ? messages.shownSingular : messages.shownPlural;
+			live.textContent = ( template || '%shown% of %total% testimonials shown' )
+				.replace( '%shown%', shown ).replace( '%total%', total );
 
 			if ( first ) {
 				first.setAttribute( 'tabindex', '-1' );

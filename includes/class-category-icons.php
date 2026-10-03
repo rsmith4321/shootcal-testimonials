@@ -74,10 +74,17 @@ class Category_Icons {
 		$attributes = array( 'viewBox', 'd', 'fill', 'fill-rule', 'clip-rule', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'stroke-miterlimit', 'stroke-dasharray', 'stroke-dashoffset', 'opacity', 'fill-opacity', 'stroke-opacity', 'transform', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry', 'width', 'height', 'points', 'xmlns' );
 		foreach ( $doc->getElementsByTagName( '*' ) as $element ) {
 			if ( ! in_array( $element->tagName, $tags, true ) || ( $element->namespaceURI && 'http://www.w3.org/2000/svg' !== $element->namespaceURI ) ) { return ''; }
+			foreach ( iterator_to_array( $element->childNodes ) as $child ) {
+				if ( $child instanceof \DOMComment ) { $element->removeChild( $child ); continue; }
+				if ( ! $child instanceof \DOMElement && ( ! $child instanceof \DOMText || '' !== trim( $child->nodeValue ) ) ) { return ''; }
+			}
 			foreach ( iterator_to_array( $element->attributes ) as $attribute ) {
 				if ( ! in_array( $attribute->name, $attributes, true ) ) { $element->removeAttributeNode( $attribute ); continue; }
 				$value = $attribute->value;
-				if ( preg_match( '/url\s*\(|javascript|data:|https?:|[<>]/i', $value ) && 'xmlns' !== $attribute->name ) { return ''; }
+				// CSS escapes can turn \75rl(\68ttp://...) into an external paint
+				// server in a browser. A literal substring check alone misses it.
+				if ( str_contains( $value, '\\' ) || str_contains( $value, '/*' ) || str_contains( $value, '*/' ) || ( 'xmlns' !== $attribute->name && preg_match( '/[\x00-\x1f\x7f]|url\s*\(|javascript|data:|https?:|[<>]/i', $value ) ) ) { return ''; }
+				if ( in_array( $attribute->name, array( 'fill', 'stroke' ), true ) && ! self::safe_color( $value ) ) { return ''; }
 				if ( 'xmlns' === $attribute->name && 'http://www.w3.org/2000/svg' !== $value ) { return ''; }
 			}
 		}
@@ -89,12 +96,33 @@ class Category_Icons {
 		return (string) $doc->saveXML( $root );
 	}
 
+	/** Static colors only: no CSS variables, paint servers or external URLs. */
+	private static function safe_color( string $value ): bool {
+		$value = trim( $value );
+		if ( in_array( $value, array( 'none', 'currentColor', 'transparent' ), true ) ) { return true; }
+		if ( preg_match( '/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/D', $value ) ) { return true; }
+		if ( preg_match( '/^[A-Za-z]+$/D', $value ) && ! in_array( strtolower( $value ), array( 'url', 'var', 'expression' ), true ) ) { return true; }
+		return (bool) preg_match( '/^(?:rgb|rgba|hsl|hsla)\([0-9.,%+\-\s]+\)$/D', $value );
+	}
+
 	public static function icon( int $id ): string {
+		static $icons_by_term = array();
 		$preset = (string) get_term_meta( $id, 'sct_icon', true );
-		if ( 'custom' === $preset ) { return self::sanitize_svg( (string) get_term_meta( $id, 'sct_icon_svg', true ) ); }
-		if ( '' === $preset || ! array_key_exists( $preset, self::presets() ) ) { return ''; }
+		$raw = 'custom' === $preset ? (string) get_term_meta( $id, 'sct_icon_svg', true ) : '';
+		$identity = $preset . "\0" . $raw;
+		if ( isset( $icons_by_term[ $id ] ) && $identity === $icons_by_term[ $id ]['identity'] ) { return $icons_by_term[ $id ]['html']; }
+		if ( 'custom' === $preset ) {
+			$html = self::sanitize_svg( $raw );
+			$icons_by_term[ $id ] = array( 'identity' => $identity, 'html' => $html );
+			return $html;
+		}
+		if ( '' === $preset || ! array_key_exists( $preset, self::presets() ) ) {
+			$icons_by_term[ $id ] = array( 'identity' => $identity, 'html' => '' );
+			return '';
+		}
 		static $icons = array();
 		if ( ! isset( $icons[ $preset ] ) ) { $icons[ $preset ] = self::sanitize_svg( (string) file_get_contents( PLUGIN_DIR . 'assets/category-icons/' . $preset . '.svg' ) ); }
+		$icons_by_term[ $id ] = array( 'identity' => $identity, 'html' => $icons[ $preset ] );
 		return $icons[ $preset ];
 	}
 }

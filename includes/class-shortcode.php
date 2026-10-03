@@ -125,7 +125,9 @@ class Shortcode {
 		// reveal. Without it, the initial count is the whole query and no card is hidden.
 		if ( 'show' === $more ) {
 			$requested = '' !== trim( (string) $atts['total'] ) ? (int) $atts['total'] : self::DEFAULT_TOTAL;
-			$total     = min( self::CEILING, max( $count, $requested ) );
+			// A saved block may have an old total below its newer initial count.
+			// Keep View more meaningful without silently rewriting authored attributes.
+			$total     = min( self::CEILING, max( $count + 1, $requested ) );
 		} else {
 			$total = $count;
 		}
@@ -179,7 +181,10 @@ class Shortcode {
 		if ( array() === $rendered_posts ) {
 			return '';
 		}
-		do_action( 'sct_rendered', $rendered_posts, '' !== $button );
+		// do_action() has a PHP 4 compatibility branch that unwraps an array
+		// containing exactly one object. Keep the post list intact for Assets and
+		// Schema when this section renders a single testimonial.
+		do_action_ref_array( 'sct_rendered', array( $rendered_posts, '' !== $button ) );
 
 		return sprintf(
 			'<section id="%8$s" class="sct-section sct-testimonials" style="--sct-lines:%1$d" data-sct-columns="%2$d" data-sct-initial="%3$d">%4$s<div class="sct-testimonials__grid sct-testimonials__grid--%2$d">%5$s</div>%6$s%7$s</section>',
@@ -242,10 +247,15 @@ class Shortcode {
 
 		// Read-only public filter. No state changes, so no nonce applies.
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$raw = isset( $_GET[ self::QUERY_VAR ] ) && is_string( $_GET[ self::QUERY_VAR ] ) ? sanitize_text_field( wp_unslash( $_GET[ self::QUERY_VAR ] ) ) : '';
+		if ( ! array_key_exists( self::QUERY_VAR, $_GET ) || ! is_string( $_GET[ self::QUERY_VAR ] ) ) {
+			return $attribute;
+		}
+		$raw = sanitize_text_field( wp_unslash( $_GET[ self::QUERY_VAR ] ) );
 
 		if ( '' === trim( $raw ) ) {
-			return $attribute;
+			// The selector's "All reviews" link deliberately sends an empty value.
+			// A missing parameter still keeps the shortcode's preset category.
+			return '';
 		}
 
 		$requested = array();

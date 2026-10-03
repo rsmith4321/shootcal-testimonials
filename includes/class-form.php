@@ -205,10 +205,12 @@ class Form {
 			return;
 		}
 
-		// A filled honeypot means a bot. Answer with the same confirmation a real
-		// submission gets and create nothing, so the bot learns nothing from the response.
+		// A filled honeypot means a bot. Use the usual confirmation text without
+		// creating a post or a transient; repeated public-nonce POSTs stay write-free.
 		if ( '' !== trim( $this->posted_text( self::HONEYPOT_FIELD ) ) ) {
-			$this->redirect_with_notice( self::confirmation() );
+			// A public nonce can be replayed. Do not create a new transient for
+			// every honeypot hit, or a bot could fill the options table.
+			$this->redirect_with_honeypot_notice();
 		}
 
 		$ip = $this->client_ip();
@@ -418,6 +420,12 @@ class Form {
 			self::SHORTCODE
 		);
 
+		// Early detection covers direct content and synced blocks. A template or
+		// widget may render later; mark it uncacheable whenever headers still permit.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WordPress cache-control contract.
+		if ( ! defined( 'DONOTCACHEPAGE' ) ) { define( 'DONOTCACHEPAGE', true ); }
+		if ( ! headers_sent() ) { nocache_headers(); }
+
 		( new Assets() )->register_assets();
 		$this->used    = true;
 		$this->id_base = wp_unique_id( 'sct-form-' );
@@ -439,7 +447,14 @@ class Form {
 		$notice = $this->render_notice();
 		$errors = $this->render_error_summary();
 
-		$form  = '<div class="sct-form-wrap">';
+		// The trigger's fragment also needs to exist when the no-script link opens
+		// this form inline. There is no dialog with this ID on the inline path.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only open flag.
+		$inline = 'dialog' !== $atts['mode']
+			|| array() !== $this->errors
+			|| '' !== $notice
+			|| isset( $_GET[ self::OPEN_QUERY_VAR ] );
+		$form  = '<div class="sct-form-wrap"' . ( $inline ? ' id="' . esc_attr( $this->id_base . '-dialog' ) . '"' : '' ) . '>';
 		$form .= $notice;
 		$form .= $errors;
 		$form .= sprintf(
@@ -468,12 +483,6 @@ class Form {
 		// A dialog that hides what the visitor needs to read is worse than no dialog, so
 		// validation failures, a waiting confirmation and the no-script open parameter all
 		// render the form in place.
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only open flag; nothing acts on it beyond choosing markup.
-		$inline = 'dialog' !== $atts['mode']
-			|| array() !== $this->errors
-			|| '' !== $notice
-			|| isset( $_GET[ self::OPEN_QUERY_VAR ] );
-
 		if ( $inline ) {
 			return $form;
 		}
@@ -827,8 +836,11 @@ class Form {
 
 		$key     = $this->notice_key( $token );
 		$message = get_transient( $key );
-
-		delete_transient( $key );
+		if ( is_string( $message ) ) {
+			delete_transient( $key );
+		} elseif ( $this->is_honeypot_token( $token ) ) {
+			$message = self::confirmation();
+		}
 
 		if ( ! is_string( $message ) || '' === trim( $message ) ) {
 			return '';
@@ -858,6 +870,29 @@ class Form {
 			303
 		);
 		exit;
+	}
+
+	/** Return the usual acknowledgement shape without a database write. */
+	private function redirect_with_honeypot_notice(): void {
+		$token = $this->honeypot_token( time() );
+		wp_safe_redirect( add_query_arg( self::NOTICE_QUERY_VAR, $token, $this->redirect_target() ), 303 );
+		exit;
+	}
+
+	/** A 10-minute, IP-bound token: eight hex timestamp digits and a 96-bit MAC. */
+	private function honeypot_token( int $timestamp ): string {
+		$issued = sprintf( '%08x', $timestamp );
+		$mac    = hash_hmac( 'sha256', 'sct_honeypot:' . $issued . ':' . $this->client_ip(), wp_salt( 'nonce' ) );
+		return $issued . substr( $mac, 0, self::TOKEN_LENGTH - 8 );
+	}
+
+	/** Check freshness and the request IP before showing a stateless acknowledgement. */
+	private function is_honeypot_token( string $token ): bool {
+		if ( ! ctype_xdigit( $token ) ) { return false; }
+		$issued = (int) hexdec( substr( $token, 0, 8 ) );
+		$now = time();
+		if ( $issued > $now || $issued < $now - self::NOTICE_TTL ) { return false; }
+		return hash_equals( $this->honeypot_token( $issued ), $token );
 	}
 
 	/**

@@ -43,10 +43,37 @@ class Assets {
 	/** Submission nonces and one-time notices must not be shared through page caches. */
 	public function protect_form_cache(): void {
 		$post = get_queried_object();
-		if ( $post instanceof \WP_Post && has_shortcode( $post->post_content, Form::SHORTCODE ) ) {
+		if ( $post instanceof \WP_Post && $this->content_has_form( $post->post_content ) ) {
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedConstantFound -- WordPress cache-control contract.
 			if ( ! defined( 'DONOTCACHEPAGE' ) ) { define( 'DONOTCACHEPAGE', true ); }
 			nocache_headers();
 		}
+	}
+
+	/** Follow only referenced synced blocks that can actually contain the form. */
+	private function content_has_form( string $content, array $seen = array() ): bool {
+		if ( has_shortcode( $content, Form::SHORTCODE ) ) { return true; }
+		if ( ! has_block( 'core/block', $content ) ) { return false; }
+		foreach ( parse_blocks( $content ) as $block ) {
+			if ( $this->block_has_form( $block, $seen ) ) { return true; }
+		}
+		return false;
+	}
+
+	/** @param array<string,mixed> $block Parsed block tree node. */
+	private function block_has_form( array $block, array $seen ): bool {
+		if ( 'core/block' === ( $block['blockName'] ?? '' ) ) {
+			$ref = (int) ( $block['attrs']['ref'] ?? 0 );
+			if ( $ref > 0 && ! isset( $seen[ $ref ] ) ) {
+				$seen[ $ref ] = true;
+				$pattern = get_post( $ref );
+				if ( $pattern instanceof \WP_Post && 'wp_block' === $pattern->post_type && $this->content_has_form( $pattern->post_content, $seen ) ) { return true; }
+			}
+		}
+		foreach ( $block['innerBlocks'] ?? array() as $inner ) {
+			if ( $this->block_has_form( $inner, $seen ) ) { return true; }
+		}
+		return false;
 	}
 
 	/** Enqueue before the head only when the current authored content needs these assets. */
@@ -74,13 +101,25 @@ class Assets {
 			self::version_for( 'assets/css/frontend.css' )
 		);
 
-		wp_register_script(
-			SLUG,
-			PLUGIN_URL . 'assets/js/frontend.js',
-			array(),
-			self::version_for( 'assets/js/frontend.js' ),
-			true
-		);
+		if ( ! wp_script_is( SLUG, 'registered' ) ) {
+			wp_register_script(
+				SLUG,
+				PLUGIN_URL . 'assets/js/frontend.js',
+				array(),
+				self::version_for( 'assets/js/frontend.js' ),
+				true
+			);
+			wp_localize_script(
+				SLUG,
+				'sctFrontend',
+				array(
+					/* translators: %shown% is the visible review count; %total% is the total rendered count. */
+					'shownSingular' => __( '%shown% of %total% testimonial shown', 'shootcal-testimonials' ),
+					/* translators: %shown% is the visible review count; %total% is the total rendered count. */
+					'shownPlural'   => __( '%shown% of %total% testimonials shown', 'shootcal-testimonials' ),
+				)
+			);
+		}
 	}
 
 	/**
