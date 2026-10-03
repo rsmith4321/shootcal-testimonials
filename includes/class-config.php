@@ -50,6 +50,7 @@ class Config {
 			'show_date'         => true,
 			'show_category'     => false,
 			'show_source'       => true,
+			'show_form_credit'  => false,
 
 			'public_single_urls' => false,
 		);

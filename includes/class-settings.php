@@ -78,7 +78,7 @@ class Settings {
 		$next['default_columns'] = Config::normalize_columns( $scalar( 'default_columns', '3' ) );
 		$next['default_count'] = max( 1, min( Shortcode::CEILING, (int) $scalar( 'default_count', '21' ) ) );
 		$next['default_more'] = 'show' === $scalar( 'default_more' ) ? 'show' : 'hide';
-		foreach ( array( 'schema_enabled', 'show_photo', 'show_rating', 'show_date', 'show_category', 'show_source', 'public_single_urls' ) as $flag ) {
+		foreach ( array( 'schema_enabled', 'show_photo', 'show_rating', 'show_date', 'show_category', 'show_source', 'show_form_credit', 'public_single_urls' ) as $flag ) {
 			$next[ $flag ] = '1' === $scalar( $flag );
 		}
 		update_option( OPTION_KEY, $next, false );
@@ -184,6 +184,10 @@ class Settings {
 								<label><input type="checkbox" name="<?php echo esc_attr( $key ); ?>" value="1" <?php checked( (bool) Config::get( $key ) ); ?> /> <?php echo esc_html( $label ); ?></label><br />
 							<?php endforeach; ?>
 						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Form credit', 'shootcal-testimonials' ); ?></th>
+						<td><label><input type="checkbox" name="show_form_credit" value="1" <?php checked( (bool) Config::get( 'show_form_credit', false ) ); ?> /> <?php esc_html_e( 'Show a small ShootCal Testimonials link below the review form', 'shootcal-testimonials' ); ?></label><p class="description"><?php esc_html_e( 'Optional and off by default. Uncheck this to remove the credit.', 'shootcal-testimonials' ); ?></p></td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Single URLs', 'shootcal-testimonials' ); ?></th>

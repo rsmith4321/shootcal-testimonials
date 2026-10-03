@@ -876,3 +876,7 @@
 .sct-category { display: inline-flex; align-items: center; gap: .35rem; min-width: 0; }
 .sct-category__icon { display: inline-flex; align-items: center; justify-content: center; width: 13px; height: 13px; flex: 0 0 13px; overflow: hidden; }
 .sct-category__icon > svg { display: block; width: 13px !important; height: 13px !important; max-width: 100%; }
+
+.sct-form .sct-form__credit { margin: .35rem 0 0; text-align: left; font-size: .625rem; line-height: 1.4; }
+.sct-form .sct-form__credit a { color: #6b7280 !important; text-decoration: none; font-size: inherit; }
+.sct-form .sct-form__credit a:hover, .sct-form .sct-form__credit a:focus-visible { text-decoration: underline; }

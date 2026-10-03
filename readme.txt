@@ -32,6 +32,8 @@ Show category labels beneath reviewer names and choose an icon in Testimonials â
 
 New installations default to 21 initial reviews. Site settings and the block/shortcode count can change that. View more reveals at least 9 cached reviews per click, rounded to complete rows (10 for two columns), or the remaining reviews when fewer are left. The render ceiling remains 60. Existing saved site/block counts are preserved unless changed by their owner.
 
+The review form can show a small ShootCal Testimonials link at its bottom left. This credit is optional, off by default, and can be enabled or disabled in Testimonial Settings. It does not affect any plugin feature.
+
 **Rendering**
 
 Cards float on a layered shadow and hold a uniform height across the grid. Each card shows a fixed-aspect media area (the photo, or the reviewer's initials when there is none), a quote clamped to a set number of lines, attribution pinned to the bottom, and a source credit line. Clicking a card opens a native `<dialog>` with the complete review, which gives focus management, Escape to close, a backdrop and an inert background for free, with no lightbox library.
@@ -134,6 +136,7 @@ Sixty per list. With View more enabled the default total held behind the button 
 = 0.6.0 =
 * Show categories beneath reviewer names with optional local Font Awesome Free presets or validated custom SVG icons.
 * Balance the compact source-footer spacing above and below the source label.
+* Add an optional small ShootCal Testimonials credit below the submission form, off by default.
 * Default to 21 initial reviews and reveal at least 9 reviews per View more click, in complete rows when possible.
 
 = 0.5.1 =

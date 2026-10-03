@@ -459,6 +459,9 @@ class Form {
 		$form .= $this->render_category( $preselect );
 		$form .= $this->render_email();
 		$form .= $this->render_submit();
+		if ( Config::get( 'show_form_credit', false ) ) {
+			$form .= '<p class="sct-form__credit"><a href="' . esc_url( 'https://shootcal.com/' ) . '" rel="nofollow noopener" target="_blank">' . esc_html__( 'ShootCal Testimonials', 'shootcal-testimonials' ) . '<span class="screen-reader-text"> ' . esc_html__( '(opens in a new tab)', 'shootcal-testimonials' ) . '</span></a></p>';
+		}
 		$form .= '</form>';
 		$form .= '</div>';
 
