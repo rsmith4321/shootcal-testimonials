@@ -863,3 +863,16 @@
 .sct-source__link { text-decoration: none !important; }
 .sct-source__link:hover, .sct-source__link:focus-visible { text-decoration: underline !important; }
 .sct-testimonial__body { padding-bottom: .75rem; }
+
+/* Equal breathing room above and below the compact source credit. */
+.sct-source { padding-block: 4px; }
+
+.sct-testimonial__body { padding-bottom: .6rem; }
+/* Category labels occupy a calm, separate line beneath the reviewer. */
+.sct-testimonial__by { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: .6rem; row-gap: .35rem; }
+.sct-testimonial__date { font-size: .7rem; text-align: right; }
+.sct-testimonial__date::before { content: none; }
+.sct-testimonial__categories, .sct-dialog__categories { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .35rem .8rem; width: 100%; color: #6b7280 !important; font-size: .72rem; }
+.sct-category { display: inline-flex; align-items: center; gap: .35rem; min-width: 0; }
+.sct-category__icon { display: inline-flex; align-items: center; justify-content: center; width: 13px; height: 13px; flex: 0 0 13px; overflow: hidden; }
+.sct-category__icon > svg { display: block; width: 13px !important; height: 13px !important; max-width: 100%; }

@@ -40,7 +40,7 @@ class Config {
 			'rating_as_of'      => '',
 
 			'default_columns'   => 3,
-			'default_count'     => 9,
+			'default_count'     => 21,
 			'default_more'      => 'hide',
 
 			'show_photo'        => true,

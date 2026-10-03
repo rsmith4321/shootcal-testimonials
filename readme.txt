@@ -4,7 +4,7 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.5.1
+Stable tag: 0.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +25,12 @@ Source attribution helps readers verify where a review appeared. It does not est
 * Post type `sct_testimonial` and a hierarchical `sct_category` taxonomy.
 * Registered meta for rating, review title, source platform, source URL, provider review id, reviewer profile URL, date provenance, consent, alternates, and source lookup state.
 * Reviewer email addresses are not registered as meta. Private consent and research annotations are available only to authorized editors in REST edit context; anonymous responses omit them.
+
+**Category icons and display counts**
+
+Show category labels beneath reviewer names and choose an icon in Testimonials → Testimonial Categories. Built-in ring, heart, people, graduation cap, house and camera icons are from Font Awesome Free 6.7.2 (CC BY 4.0, Fonticons, Inc.; license and source bundled). Choose Custom SVG to paste a static shape/path icon. Scripts, links, embedded content and external resources are rejected; invalid custom submissions keep the previous icon. Icons are decorative and do not replace category text.
+
+New installations default to 21 initial reviews. Site settings and the block/shortcode count can change that. View more reveals at least 9 cached reviews per click, rounded to complete rows (10 for two columns), or the remaining reviews when fewer are left. The render ceiling remains 60. Existing saved site/block counts are preserved unless changed by their owner.
 
 **Rendering**
 
@@ -89,7 +95,7 @@ Because turning it on for your own reviews is more likely to cost you than to he
 
 = Does the View more button make a request? =
 
-No. It reveals one row of cards that are already in the page HTML, moving focus to the first newly revealed card and announcing progress through a live region. When the last row is revealed the button removes itself.
+No. It reveals at least nine reviews already in the page HTML, rounded to full rows, moving focus to the first newly revealed card and announcing progress through a live region. When the remaining reviews are revealed the button removes itself.
 
 = Where do public form submissions go? =
 
@@ -124,6 +130,11 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 Sixty per list. With View more enabled the default total held behind the button is twenty four. Both are page-weight guards rather than design constraints.
 
 == Changelog ==
+
+= 0.6.0 =
+* Show categories beneath reviewer names with optional local Font Awesome Free presets or validated custom SVG icons.
+* Balance the compact source-footer spacing above and below the source label.
+* Default to 21 initial reviews and reveal at least 9 reviews per View more click, in complete rows when possible.
 
 = 0.5.1 =
 * Make source footers shorter and less prominent with small muted text, smaller source marks and reduced padding; retain matching heights and keyboard cues.

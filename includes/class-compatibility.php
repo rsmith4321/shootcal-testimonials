@@ -77,6 +77,7 @@ class Compatibility {
 		add_action( 'delete_' . TAXONOMY, array( $this, 'schedule_purge' ) );
 		add_action( 'added_post_meta', array( $this, 'meta_changed' ), 10, 4 );
 		add_action( 'updated_post_meta', array( $this, 'meta_changed' ), 10, 4 );
+		foreach ( array( 'added_term_meta', 'updated_term_meta', 'deleted_term_meta' ) as $hook ) { add_action( $hook, array( $this, 'term_icon_changed' ), 10, 4 ); }
 		add_action( 'deleted_post_meta', array( $this, 'meta_changed' ), 10, 4 );
 		add_action( 'set_object_terms', array( $this, 'terms_changed' ), 10, 6 );
 		add_action( 'update_option_' . OPTION_KEY, array( $this, 'schedule_purge' ) );
@@ -219,6 +220,11 @@ class Compatibility {
 	public function schedule_purge(): void { $this->purge_pending = true; }
 	public function meta_changed( $meta_id, $post_id, $key, $value ): void {
 		if ( POST_TYPE === get_post_type( $post_id ) && 'publish' === get_post_status( $post_id ) && ( 0 === strpos( (string) $key, META_PREFIX ) || '_thumbnail_id' === $key ) ) { $this->schedule_purge(); }
+	}
+	public function term_icon_changed( $meta_id, $term_id, $key, $value ): void {
+		if ( ! in_array( $key, array( 'sct_icon', 'sct_icon_svg' ), true ) ) { return; }
+		$term = get_term( (int) $term_id );
+		if ( $term instanceof \WP_Term && TAXONOMY === $term->taxonomy ) { $this->schedule_purge(); }
 	}
 	public function terms_changed( $id, $terms, $tt_ids, $taxonomy, $append, $old_tt_ids ): void {
 		if ( TAXONOMY === $taxonomy && POST_TYPE === get_post_type( $id ) && 'publish' === get_post_status( $id ) ) { $this->schedule_purge(); }

@@ -57,8 +57,8 @@
 	var CEILING     = config.ceiling || 60;
 	var CLAMP_MIN   = ( config.clamp && config.clamp.min ) || 2;
 	var CLAMP_MAX   = ( config.clamp && config.clamp.max ) || 12;
-	var DEF_COUNT   = siteDefaults.count || 9;
-	var DEF_TOTAL   = siteDefaults.total || 24;
+	var DEF_COUNT   = siteDefaults.count || 21;
+	var DEF_TOTAL   = siteDefaults.total || 60;
 	var DEF_COLUMNS = siteDefaults.columns || 3;
 	var DEF_MORE    = siteDefaults.more || 'hide';
 	var DEF_LINES   = siteDefaults.lines || 5;
@@ -353,8 +353,8 @@
 					} ),
 					'show' === more
 						? createElement( RangeControl, {
-							label: __( 'Total held behind View more', 'shootcal-testimonials' ),
-							help: __( 'Reveals already-rendered cards one row per click. No request is made, so a visitor click cannot trigger a database or provider query.', 'shootcal-testimonials' ),
+							label: __( 'Total reviews available', 'shootcal-testimonials' ),
+							help: __( 'Shows at least 9 more reviews per click, or the remaining reviews when fewer are left.', 'shootcal-testimonials' ),
 							value: total,
 							min: count + 1,
 							max: CEILING,

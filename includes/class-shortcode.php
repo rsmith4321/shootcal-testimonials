@@ -48,7 +48,7 @@ class Shortcode {
 	 * Default total rendered when View more is on. Kept well below the ceiling so a long
 	 * library cannot silently balloon the HTML.
 	 */
-	public const DEFAULT_TOTAL = 24;
+	public const DEFAULT_TOTAL = 60;
 
 	/**
 	 * Lines of quote shown on a card before it clamps.
@@ -392,10 +392,16 @@ class Shortcode {
 			$attribution .= '<span class="sct-testimonial__date">' . esc_html( $date ) . '</span>';
 		}
 
-		$category_text = '';
+		$category_html = '';
 		if ( Config::get( 'show_category', false ) ) {
 			$terms = get_the_terms( $post, TAXONOMY );
-			if ( is_array( $terms ) ) { $category_text = implode( ', ', wp_list_pluck( $terms, 'name' ) ); $attribution .= '<span class="sct-testimonial__categories">' . esc_html( implode( ', ', wp_list_pluck( $terms, 'name' ) ) ) . '</span>'; }
+			if ( is_array( $terms ) ) {
+				foreach ( $terms as $term ) {
+					$icon = Category_Icons::icon( $term->term_id );
+					$category_html .= '<span class="sct-category">' . ( '' !== $icon ? '<span class="sct-category__icon">' . $icon . '</span>' : '' ) . '<span>' . esc_html( $term->name ) . '</span></span>';
+				}
+				$attribution .= '<span class="sct-testimonial__categories">' . $category_html . '</span>';
+			}
 		}
 		$attribution .= '</figcaption>';
 
@@ -411,7 +417,7 @@ class Shortcode {
 			esc_html__( 'Read full review', 'shootcal-testimonials' )
 		);
 
-		$dialog = $this->render_dialog( $dialog_id, $name, $date, $rating, $source_line, $category_text );
+		$dialog = $this->render_dialog( $dialog_id, $name, $date, $rating, $source_line, $category_html );
 
 		return array(
 			'card'   => $card,
@@ -492,7 +498,7 @@ class Shortcode {
 	 * @param int    $rating      0 to 5.
 	 * @param string $source_line Pre-rendered source attribution.
 	 */
-	private function render_dialog( string $id, string $name, string $date, int $rating, string $source_line, string $category_text ): string {
+	private function render_dialog( string $id, string $name, string $date, int $rating, string $source_line, string $category_html ): string {
 		$stars = ( $rating > 0 && Config::get( 'show_rating', true ) ) ? $this->render_rating( $rating ) : '';
 
 		$by = '<div class="sct-dialog__by">';
@@ -501,7 +507,7 @@ class Shortcode {
 			$by .= '<span class="sct-dialog__date">' . esc_html( $date ) . '</span>';
 		}
 
-		if ( '' !== $category_text ) { $by .= '<span class="sct-dialog__categories">' . esc_html( $category_text ) . '</span>'; }
+		if ( '' !== $category_html ) { $by .= '<span class="sct-dialog__categories">' . $category_html . '</span>'; }
 		$by .= '</div>';
 
 		return sprintf(

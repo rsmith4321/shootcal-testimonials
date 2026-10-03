@@ -7,7 +7,7 @@
  *    the open control. Without this the full review is already on the page.
  * 2. Open and close the native dialog from the card, the open control or the close
  *    button, including a click on the backdrop.
- * 3. Reveal one row at a time for View more, with focus moved to the first newly
+ * 3. Reveal at least nine reviews at a time for View more, with focus moved to the first newly
  *    revealed card and a live-region announcement.
  * 4. Open a dialog-mode submission form from its trigger button.
  *
@@ -184,7 +184,7 @@
 				return;
 			}
 
-			var reveal = Math.min( columnsFor( section ), hidden.length );
+			var reveal = Math.min( Math.ceil( 9 / columnsFor( section ) ) * columnsFor( section ), hidden.length );
 			var first = null;
 
 			for ( var i = 0; i < reveal; i++ ) {

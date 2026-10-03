@@ -1,0 +1,3 @@
+Font Awesome Free 6.7.2 by Fonticons, Inc.
+Source: https://github.com/FortAwesome/Font-Awesome/tree/6.7.2/svgs/solid
+Icons: CC BY 4.0. See LICENSE.txt. These six SVG files are bundled locally; no Font Awesome script, font or remote request is used.

@@ -76,7 +76,7 @@ class Settings {
 		$next['business_name'] = sanitize_text_field( $scalar( 'business_name' ) );
 		$next['rating_as_of'] = sanitize_text_field( $scalar( 'rating_as_of' ) );
 		$next['default_columns'] = Config::normalize_columns( $scalar( 'default_columns', '3' ) );
-		$next['default_count'] = max( 1, min( Shortcode::CEILING, (int) $scalar( 'default_count', '9' ) ) );
+		$next['default_count'] = max( 1, min( Shortcode::CEILING, (int) $scalar( 'default_count', '21' ) ) );
 		$next['default_more'] = 'show' === $scalar( 'default_more' ) ? 'show' : 'hide';
 		foreach ( array( 'schema_enabled', 'show_photo', 'show_rating', 'show_date', 'show_category', 'show_source', 'public_single_urls' ) as $flag ) {
 			$next[ $flag ] = '1' === $scalar( $flag );
