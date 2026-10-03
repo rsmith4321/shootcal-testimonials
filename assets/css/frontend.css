@@ -862,12 +862,12 @@
 .sct-testimonials .sct-source__link, .sct-dialog .sct-source__link { color: #6b7280 !important; }
 .sct-source__link { text-decoration: none !important; }
 .sct-source__link:hover, .sct-source__link:focus-visible { text-decoration: underline !important; }
-.sct-testimonial__body { padding-bottom: .75rem; }
 
 /* Equal breathing room above and below the compact source credit. */
 .sct-source { padding-block: 4px; }
 
-.sct-testimonial__body { padding-bottom: .6rem; }
+/* The source row owns its vertical spacing; no extra gap above Read full review. */
+.sct-testimonial__body { padding-bottom: 0; }
 /* Category labels occupy a calm, separate line beneath the reviewer. */
 .sct-testimonial__by { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: .6rem; row-gap: .35rem; }
 .sct-testimonial__date { font-size: .7rem; text-align: right; }
