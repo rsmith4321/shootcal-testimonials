@@ -768,7 +768,7 @@
 .sct-testimonials:not(.sct-js) .sct-testimonials__more { display: none; }
 .sct-dialog { --sct-radius: 22px; --sct-muted: #5d6672; --sct-line: rgba(15,23,42,.09); border-radius: 22px; }
 .sct-dialog__close:focus-visible { outline: none; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #334155, 0 3px 14px rgba(15,23,42,.22); }
-.sct-source__mark { width: 14px !important; height: auto !important; object-fit: contain !important; margin: 14px !important; flex: 0 0 14px; }
+.sct-source__mark { width: 10px !important; height: auto !important; object-fit: contain !important; margin: 10px !important; flex: 0 0 10px; }
 .sct-testimonial__categories { color: var(--sct-muted); font-size: .75rem; }
 .sct-js .sct-testimonial__open { min-height: 44px; }
 @media (forced-colors: active) { .sct-dialog__close:focus-visible { outline: 2px solid ButtonText; } }
@@ -843,8 +843,8 @@
 @media (max-width: 480px) { .sct-filter > span { flex-basis: 100%; text-align: center; } }
 
 /* Uniform compact attribution rows, with source links integrated into the label. */
-.sct-source { flex-wrap: nowrap; font-size: 0.6875rem !important; line-height: 1.45; }
-.sct-source__label { min-height: 43px; font-size: inherit !important; }
+.sct-source { flex-wrap: nowrap; font-size: 0.625rem !important; line-height: 1.4; padding-block-start: 0; border-color: #edf0f3; }
+.sct-source__label { min-height: 31px; font-size: inherit !important; }
 .sct-source__link { display: inline-flex; align-items: center; font-size: inherit !important; }
 .sct-source--empty { border-color: transparent; }
 
@@ -856,3 +856,10 @@
 .sct-testimonials :is(button, a, summary):focus-visible,
 .sct-dialog :is(button, a, input, select, textarea):focus-visible { outline: 2px solid #64748b; outline-offset: 2px; }
 .sct-dialog__close:focus-visible { box-shadow: 0 2px 12px rgba(15,23,42,.18); }
+
+/* Source credit is supporting detail, with readable but restrained contrast. */
+.sct-testimonials .sct-source, .sct-dialog .sct-source,
+.sct-testimonials .sct-source__link, .sct-dialog .sct-source__link { color: #6b7280 !important; }
+.sct-source__link { text-decoration: none !important; }
+.sct-source__link:hover, .sct-source__link:focus-visible { text-decoration: underline !important; }
+.sct-testimonial__body { padding-bottom: .75rem; }
