@@ -11,8 +11,8 @@
  *    revealed card and a live-region announcement.
  * 4. Open a dialog-mode submission form from its trigger button.
  *
- * No request is made anywhere in this file. A visitor click cannot trigger a database
- * query or a call to a review provider.
+ * Dialogs and View more read existing markup. Category links use normal same-site
+ * navigation; no interaction calls a review provider.
  */
 ( function () {
 	'use strict';
@@ -248,6 +248,14 @@
 		// Form dialogs live on pages with or without a testimonial list, so they are
 		// wired independently of the section walk below.
 		wireFormDialogs();
+		Array.prototype.forEach.call( document.querySelectorAll( '.sct-filter__dropdown' ), function ( dropdown ) {
+			var summary = dropdown.querySelector( 'summary' );
+			dropdown.addEventListener( 'keydown', function ( event ) {
+				if ( event.key === 'Escape' && dropdown.open ) { dropdown.open = false; summary.focus(); event.preventDefault(); }
+			} );
+			document.addEventListener( 'click', function ( event ) { if ( ! dropdown.contains( event.target ) ) { dropdown.open = false; } } );
+			dropdown.addEventListener( 'focusout', function ( event ) { if ( ! dropdown.contains( event.relatedTarget ) ) { dropdown.open = false; } } );
+		} );
 
 		Array.prototype.forEach.call( document.querySelectorAll( '.sct-testimonials' ), init );
 	}

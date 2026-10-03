@@ -194,22 +194,22 @@ class Shortcode {
 		);
 	}
 
-	/** Read-only category form; normal navigation also works without JavaScript. */
+	/** Category links use ordinary same-site navigation, including without JavaScript. */
 	private function render_filter( string $category, string $instance ): string {
 		$terms = get_terms( array( 'taxonomy' => TAXONOMY, 'hide_empty' => true ) );
 		if ( ! is_array( $terms ) || count( $terms ) < 2 ) { return ''; }
 		$url = get_permalink( get_queried_object_id() );
 		if ( ! is_string( $url ) || '' === $url ) { return ''; }
-		$id = $instance . '-category';
-		$out = '<form class="sct-filter" method="get" action="' . esc_url( $url ) . '#' . esc_attr( $instance ) . '">';
-		$query = array();
-		wp_parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query );
-		foreach ( $query as $key => $value ) {
-			if ( is_scalar( $value ) && self::QUERY_VAR !== $key ) { $out .= '<input type="hidden" name="' . esc_attr( $key ) . '" value="' . esc_attr( (string) $value ) . '" />'; }
+		$choices = array( '' => __( 'All reviews', 'shootcal-testimonials' ) );
+		foreach ( $terms as $term ) { $choices[ $term->slug ] = $term->name; }
+		$selected = $choices[ $category ] ?? __( 'Selected categories', 'shootcal-testimonials' );
+		$label_id = $instance . '-category-label';
+		$out = '<div class="sct-filter"><span id="' . esc_attr( $label_id ) . '">' . esc_html__( 'Review category', 'shootcal-testimonials' ) . '</span><details class="sct-filter__dropdown"><summary aria-describedby="' . esc_attr( $label_id ) . '">' . esc_html( $selected ) . '</summary><nav class="sct-filter__options" aria-label="' . esc_attr__( 'Review categories', 'shootcal-testimonials' ) . '">';
+		foreach ( $choices as $slug => $name ) {
+			$href = add_query_arg( self::QUERY_VAR, $slug, $url ) . '#' . $instance;
+			$out .= '<a href="' . esc_url( $href ) . '"' . ( $category === $slug ? ' aria-current="page"' : '' ) . '>' . esc_html( $name ) . '</a>';
 		}
-		$out .= '<label for="' . esc_attr( $id ) . '">' . esc_html__( 'Review category', 'shootcal-testimonials' ) . '</label><select id="' . esc_attr( $id ) . '" name="' . esc_attr( self::QUERY_VAR ) . '"><option value="">' . esc_html__( 'All reviews', 'shootcal-testimonials' ) . '</option>';
-		foreach ( $terms as $term ) { $out .= '<option value="' . esc_attr( $term->slug ) . '"' . selected( $category, $term->slug, false ) . '>' . esc_html( $term->name ) . '</option>'; }
-		return $out . '</select><button type="submit">' . esc_html__( 'Filter reviews', 'shootcal-testimonials' ) . '</button></form>';
+		return $out . '</nav></details></div>';
 	}
 
 	/**
@@ -565,22 +565,22 @@ class Shortcode {
 			);
 		}
 
-		$link = '';
+		$label_html = '<span class="sct-source__label">' .
+			( 'google' === $source ? '<img class="sct-source__mark" src="' . esc_url( PLUGIN_URL . 'assets/google-g.svg' ) . '" width="18" height="18" alt="" loading="lazy" />' : '' ) . esc_html( $label ) . '</span>';
 
 		if ( '' !== $url ) {
-			$link = sprintf(
+			$label_html = sprintf(
 				'<a class="sct-source__link" href="%1$s" rel="nofollow noopener external" target="_blank">%2$s<span class="screen-reader-text"> %3$s</span></a>',
 				esc_url( $url ),
-				esc_html__( 'View review source', 'shootcal-testimonials' ),
+				$label_html,
 				esc_html__( '(opens in a new tab)', 'shootcal-testimonials' )
 			);
 		}
 
 		return sprintf(
-			'<p class="sct-source sct-source--%1$s"><span class="sct-source__label">%2$s</span>%3$s</p>',
+			'<p class="sct-source sct-source--%1$s">%2$s</p>',
 			esc_attr( $source ),
-			( 'google' === $source ? '<img class="sct-source__mark" src="' . esc_url( PLUGIN_URL . 'assets/google-g.svg' ) . '" width="18" height="18" alt="" loading="lazy" />' : '' ) . esc_html( $label ),
-			$link
+			$label_html
 		);
 	}
 

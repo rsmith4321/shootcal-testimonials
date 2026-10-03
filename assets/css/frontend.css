@@ -831,9 +831,28 @@
 .sct-dialog__categories { font-size: .82rem; color: #5d6672 !important; }
 .sct-dialog__inner:focus { outline: none; }
 .sct-dialog__close:focus:not(:focus-visible) { outline: none !important; box-shadow: 0 2px 12px rgba(15,23,42,.18) !important; }
-.sct-filter { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .65rem; margin: 0 0 1.6rem; }
-.sct-filter label { font-size: .9rem; font-weight: 600; }
-.sct-filter select, .sct-filter button { color-scheme: only light; background: #fff !important; color: #23292f !important; border: 1px solid #cbd1d8; border-radius: 999px; min-height: 44px; padding: .55rem 1rem; font: inherit; font-size: .9rem; max-width: 100%; }
-.sct-filter button { cursor: pointer; font-weight: 600; }
-.sct-filter select:focus-visible, .sct-filter button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
-@media (max-width: 480px) { .sct-filter label { flex-basis: 100%; text-align: center; } }
+.sct-filter { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .75rem; margin: 0 0 1.6rem; position: relative; z-index: 3; }
+.sct-filter > span { font-size: .85rem; font-weight: 600; }
+.sct-filter__dropdown { position: relative; min-width: 220px; max-width: 100%; color-scheme: only light; }
+.sct-filter__dropdown summary { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 44px; padding: .6rem 1rem; box-sizing: border-box; list-style: none; cursor: pointer; font-size: .85rem; background: #fff !important; color: #23292f !important; border: 1px solid #d8dde3; border-radius: 14px; box-shadow: 0 2px 8px rgba(15,23,42,.04); }
+.sct-filter__dropdown summary::-webkit-details-marker { display: none; }
+.sct-filter__dropdown summary::after { content: ''; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); flex: none; margin-top: -3px; }
+.sct-filter__options { position: absolute; top: calc(100% + 8px); inset-inline: 0; display: grid; padding: 6px; border: 1px solid #e0e4e9; border-radius: 14px; background: #fff !important; box-shadow: 0 12px 30px rgba(15,23,42,.15); max-height: 320px; overflow-y: auto; }
+.sct-filter__options a { display: block; padding: .65rem .75rem; min-height: 40px; box-sizing: border-box; border-radius: 9px; color: #374151 !important; font-size: .82rem; line-height: 1.4; text-decoration: none !important; }
+.sct-filter__options a:hover, .sct-filter__options a[aria-current="page"] { background: #eef2f6 !important; color: #111827 !important; }
+@media (max-width: 480px) { .sct-filter > span { flex-basis: 100%; text-align: center; } }
+
+/* Uniform compact attribution rows, with source links integrated into the label. */
+.sct-source { flex-wrap: nowrap; font-size: 0.6875rem !important; line-height: 1.45; }
+.sct-source__label { min-height: 55px; font-size: inherit !important; }
+.sct-source__link { display: inline-flex; align-items: center; font-size: inherit !important; }
+.sct-testimonial .sct-source { margin-top: auto; }
+
+/* Pointer and programmatic focus stay quiet; Tab navigation keeps a restrained cue. */
+.sct-testimonials :is(button, a, summary, figure):focus:not(:focus-visible),
+.sct-dialog :is(button, a, input, select, textarea):focus:not(:focus-visible) { outline: none !important; }
+.sct-testimonials :is(button, a, summary):focus:not(:focus-visible),
+.sct-dialog :is(a, input, select, textarea, .sct-form__submit):focus:not(:focus-visible) { box-shadow: none !important; }
+.sct-testimonials :is(button, a, summary):focus-visible,
+.sct-dialog :is(button, a, input, select, textarea):focus-visible { outline: 2px solid #64748b; outline-offset: 2px; }
+.sct-dialog__close:focus-visible { box-shadow: 0 2px 12px rgba(15,23,42,.18); }

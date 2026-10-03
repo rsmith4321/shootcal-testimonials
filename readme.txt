@@ -4,7 +4,7 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.4.3
+Stable tag: 0.4.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -118,6 +118,11 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 Sixty per list. With View more enabled the default total held behind the button is twenty four. Both are page-weight guards rather than design constraints.
 
 == Changelog ==
+
+= 0.4.4 =
+* Normalize compact source attribution rows and integrate source links into their labels.
+* Replace the system category selector with a styled downward-opening menu that works without JavaScript.
+* Suppress pointer focus rings while retaining restrained keyboard focus indicators.
 
 = 0.4.3 =
 * Align source marks, enlarge dialog names, remove repeated names and display selected category metadata.
