@@ -15,7 +15,16 @@ class Editor {
 	public function render( \WP_Post $post ): void {
 		wp_nonce_field( 'sct_review_details', 'sct_details_nonce' );
 		echo '<p>' . esc_html__( 'Edit the reviewer name, quote, date, photo and categories with the standard WordPress controls. Source details below do not change the client’s wording.', 'shootcal-testimonials' ) . '</p>';
+		$source = Meta::normalize_source( get_post_meta( $post->ID, 'sct_source', true ) );
+		echo '<p><label for="sct_source"><strong>' . esc_html__( 'Originally posted on', 'shootcal-testimonials' ) . '</strong></label><br><select id="sct_source" name="sct_details[sct_source]" aria-describedby="sct_source_help">';
+		foreach ( Meta::source_labels() as $key => $label ) {
+			echo '<option value="' . esc_attr( $key ) . '"' . selected( $source, $key, false ) . '>' . esc_html( 'other' === $key ? __( 'Other website', 'shootcal-testimonials' ) : $label ) . '</option>';
+		}
+		echo '</select><br><span id="sct_source_help">' . esc_html__( 'Choose the site where this review originally appeared. Direct reviews have no external source label.', 'shootcal-testimonials' ) . '</span></p>';
+		echo '<p><label for="sct_source_url"><strong>' . esc_html__( 'Original review link (optional)', 'shootcal-testimonials' ) . '</strong></label><br><input type="url" class="widefat" id="sct_source_url" name="sct_details[sct_source_url]" value="' . esc_attr( (string) get_post_meta( $post->ID, 'sct_source_url', true ) ) . '" placeholder="https://" aria-describedby="sct_source_url_help"><br><span id="sct_source_url_help">' . esc_html__( 'Paste a public link to the review, reviewer profile or review listing. Without a link, the source is displayed as plain text.', 'shootcal-testimonials' ) . '</span></p>';
+		echo '<p>' . esc_html__( 'Source attribution helps visitors verify a review. It does not grant permission to reuse content or guarantee Google search stars; review structured data is off by default.', 'shootcal-testimonials' ) . '</p>';
 		foreach ( ( new Meta() )->fields() as $key => $args ) {
+			if ( in_array( $key, array( 'sct_source', 'sct_source_url' ), true ) ) { continue; }
 			$value = (string) get_post_meta( $post->ID, $key, true );
 			echo '<p><label for="' . esc_attr( $key ) . '"><strong>' . esc_html( $args['description'] ) . '</strong></label><br>';
 			if ( in_array( $key, array( 'sct_source', 'sct_source_lookup', 'sct_rating' ), true ) ) {

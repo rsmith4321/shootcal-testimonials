@@ -40,9 +40,38 @@ class Meta {
 		'theknot',
 		'yelp',
 		'facebook',
+		'trustpilot',
+		'tripadvisor',
+		'bbb',
+		'thumbtack',
+		'angi',
+		'houzz',
+		'nextdoor',
+		'bark',
+		'yell',
+		'g2',
+		'capterra',
+		'amazon',
+		'etsy',
+		'booking',
+		'opentable',
 		'direct',
 		'other',
 	);
+
+	/** Human-readable platform names shared by editor controls and public attribution. */
+	public static function source_labels(): array {
+		return array(
+			'direct' => __( 'Collected directly (no external source)', 'shootcal-testimonials' ),
+			'google' => 'Google', 'facebook' => 'Facebook', 'yelp' => 'Yelp',
+			'theknot' => 'The Knot', 'weddingwire' => 'WeddingWire', 'zola' => 'Zola',
+			'trustpilot' => 'Trustpilot', 'tripadvisor' => 'Tripadvisor', 'bbb' => 'Better Business Bureau',
+			'thumbtack' => 'Thumbtack', 'angi' => 'Angi', 'houzz' => 'Houzz', 'nextdoor' => 'Nextdoor',
+			'bark' => 'Bark', 'yell' => 'Yell', 'g2' => 'G2', 'capterra' => 'Capterra',
+			'amazon' => 'Amazon', 'etsy' => 'Etsy', 'booking' => 'Booking.com', 'opentable' => 'OpenTable',
+			'other' => __( 'another website', 'shootcal-testimonials' ),
+		);
+	}
 
 	/**
 	 * The only three states a source lookup may be recorded as.

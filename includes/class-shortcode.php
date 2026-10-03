@@ -406,7 +406,7 @@ class Shortcode {
 			$stars,
 			esc_html( $quote ),
 			$attribution,
-			$source_line,
+			'' === $source_line && Config::get( 'show_source', true ) ? '<p class="sct-source sct-source--empty" aria-hidden="true"><span class="sct-source__label"></span></p>' : $source_line,
 			esc_attr( $dialog_id ),
 			esc_html__( 'Read full review', 'shootcal-testimonials' )
 		);
@@ -561,7 +561,7 @@ class Shortcode {
 			$label = sprintf(
 				/* translators: %s: platform name. */
 				__( 'Originally posted on %s', 'shootcal-testimonials' ),
-				array( 'theknot' => 'The Knot', 'weddingwire' => 'WeddingWire', 'zola' => 'Zola', 'yelp' => 'Yelp', 'facebook' => 'Facebook', 'other' => __( 'another website', 'shootcal-testimonials' ) )[ $source ] ?? ucfirst( $source )
+				Meta::source_labels()[ $source ] ?? __( 'another website', 'shootcal-testimonials' )
 			);
 		}
 

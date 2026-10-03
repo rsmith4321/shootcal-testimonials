@@ -768,7 +768,7 @@
 .sct-testimonials:not(.sct-js) .sct-testimonials__more { display: none; }
 .sct-dialog { --sct-radius: 22px; --sct-muted: #5d6672; --sct-line: rgba(15,23,42,.09); border-radius: 22px; }
 .sct-dialog__close:focus-visible { outline: none; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #334155, 0 3px 14px rgba(15,23,42,.22); }
-.sct-source__mark { width: 18px !important; height: auto !important; object-fit: contain !important; margin: 18px !important; flex: 0 0 18px; }
+.sct-source__mark { width: 14px !important; height: auto !important; object-fit: contain !important; margin: 14px !important; flex: 0 0 14px; }
 .sct-testimonial__categories { color: var(--sct-muted); font-size: .75rem; }
 .sct-js .sct-testimonial__open { min-height: 44px; }
 @media (forced-colors: active) { .sct-dialog__close:focus-visible { outline: 2px solid ButtonText; } }
@@ -844,9 +844,9 @@
 
 /* Uniform compact attribution rows, with source links integrated into the label. */
 .sct-source { flex-wrap: nowrap; font-size: 0.6875rem !important; line-height: 1.45; }
-.sct-source__label { min-height: 55px; font-size: inherit !important; }
+.sct-source__label { min-height: 43px; font-size: inherit !important; }
 .sct-source__link { display: inline-flex; align-items: center; font-size: inherit !important; }
-.sct-testimonial .sct-source { margin-top: auto; }
+.sct-source--empty { border-color: transparent; }
 
 /* Pointer and programmatic focus stay quiet; Tab navigation keeps a restrained cue. */
 .sct-testimonials :is(button, a, summary, figure):focus:not(:focus-visible),

@@ -680,7 +680,7 @@ class Form {
 				self::EMAIL_MAX,
 				$this->control_attrs( 'email', true )
 			),
-			__( 'Optional and never published. Stored where the REST API cannot reach it, and used only if we need to check a detail with you.', 'shootcal-testimonials' ),
+			__( 'Optional and never published. Only site editors can see your email, and it is used only if we need to check a detail with you.', 'shootcal-testimonials' ),
 			false
 		);
 	}

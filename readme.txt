@@ -4,15 +4,21 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.4.4
+Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Modern testimonial cards and full-review dialogs, native WordPress storage, and a moderated submission form.
+Modern testimonials with transparent review sources, category filters, full-review dialogs and native WordPress storage.
 
 == Description ==
 
 ShootCal Testimonials keeps your client reviews in WordPress itself rather than in a bespoke table. A testimonial is a post: the quote lives in the post content, the reviewer's display name in the title, the review date in the post date, and the photo as the featured image. That means the block editor, revisions, search, and the REST API all work without custom code.
+
+**Transparent review sources**
+
+Choose “Originally posted on” when adding or editing a review. Select from Google, Facebook, Yelp, The Knot, WeddingWire, Zola, Trustpilot, Tripadvisor, Better Business Bureau, Thumbtack, Angi, Houzz, Nextdoor, Bark, Yell, G2, Capterra, Amazon, Etsy, Booking.com, OpenTable or another website. Add an optional public link to the original review, reviewer profile or review listing. Source labels have consistent compact spacing; the label becomes a link when a URL is provided. Direct reviews show no third-party source claim.
+
+Source attribution helps readers verify where a review appeared. It does not establish permission to republish, certify policy compliance or guarantee search rankings or review stars. Google does not award self-serving LocalBusiness/Organization review snippets, and its review-snippet guidelines prohibit aggregating ratings from other websites. Review structured data stays off by default; external reviews are excluded when it is enabled. Keep the original wording and obtain the rights needed to reuse reviews. Google Places/API import rules are separate; this plugin does not scrape or connect to review providers.
 
 **Native storage**
 
@@ -28,7 +34,7 @@ The complete quote appears in the HTML exactly once, inside the card, and the di
 
 **No visitor-triggered requests**
 
-"View more" reveals cards that are already rendered, and the dialogs read from markup already on the page. A visitor click cannot trigger a database query or a call to a review provider.
+"View more" reveals cards that are already rendered, and the dialogs read from markup already on the page. Category links use normal same-site navigation and work without JavaScript. No interaction calls a review provider.
 
 **Progressive enhancement**
 
@@ -107,7 +113,7 @@ Nothing. Uninstalling removes the plugin's options only. Testimonials, their pho
 
 = Is the Google mark the official asset? =
 
-Yes. The bundled gradient Google G was downloaded unmodified from Google’s official Partner Marketing Hub. It uses clear space equal to the mark width and remains separate from ratings. A source link may lead to the review listing or reviewer profile, so it is labelled "View review source".
+Yes. The bundled gradient Google G was downloaded unmodified from Google’s official Partner Marketing Hub. It uses clear space equal to the mark width and remains separate from ratings. A source link may lead to the review listing or reviewer profile, so the linked “Originally posted on” label identifies its platform without claiming a specific review permalink.
 
 = I use a performance plugin (Perfmatters, WP Rocket, LiteSpeed Cache, Autoptimize) and the cards look unstyled or the dialog misbehaves. =
 
@@ -118,6 +124,11 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 Sixty per list. With View more enabled the default total held behind the button is twenty four. Both are page-weight guards rather than design constraints.
 
 == Changelog ==
+
+= 0.5.0 =
+* Add a prominent Originally posted on editor selector with 21 named platforms, direct reviews and other websites.
+* Add a dedicated optional public review-link input and shared readable platform labels.
+* Document transparent attribution and conservative SEO defaults without promising policy compliance or search stars.
 
 = 0.4.4 =
 * Normalize compact source attribution rows and integrate source links into their labels.
