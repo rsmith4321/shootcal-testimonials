@@ -40,9 +40,10 @@ are restricted to authorized REST edit context. Keep both privacy boundaries int
   aggregate is only emitted when `rating_as_of` is set.
 - **Client wording stays verbatim.** Never rewrite a review, and never strip em dashes from
   a client quote. The no-em-dash preference applies to copy we author, not to quotations.
-- **No visitor-triggered requests.** View more reveals already-rendered cards and the
-  dialogs read from markup already on the page. Keep it that way; this is the failure mode
-  that saturated PHP-FPM on this host in August 2026.
+- **Bounded local continuation.** View more and scrolling reveal already-rendered cards
+  first. Once exhausted, they may request the next capped page from this WordPress site.
+  Never contact a review provider, request a page per swipe, or issue overlapping loads;
+  the earlier visitor-triggered provider path saturated PHP-FPM in August 2026.
 - **Progressive enhancement.** Without JavaScript the quote is unclamped and the full text
   is on the page. The open control is hidden until script adds `.sct-js`.
 
@@ -56,7 +57,7 @@ Do not call parity shipped until that release and ordinary Free-account acceptan
 
 Columns remain 1 to 3 on both products. ShootCal stores up to nine inline items, while
 WordPress renders up to sixty library posts. This accepted storage difference is retained.
-View more and dialogs read existing page content without visitor-triggered provider calls.
+View more and the lightbox read loaded page content without provider calls.
 
 ## Release discipline
 

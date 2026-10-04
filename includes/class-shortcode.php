@@ -4,21 +4,17 @@
  *
  * Testimonials render as uniform floating cards: a fixed-aspect media area, a quote
  * clamped to a set number of lines, an attribution pinned to the bottom, and a source
- * credit line. Clicking a card opens a native dialog with the complete review.
- *
- * Native <dialog> is used rather than a lightbox library. It gives focus management,
- * Escape to close, a backdrop and an inert background for free, and adds no dependency.
+ * credit line. Clicking a card opens a locally bundled PhotoSwipe view with the complete
+ * review. The native dialog remains an offline fallback when the module cannot load.
  *
  * Page weight. The complete quote appears in the HTML exactly once, inside the card, and
  * the dialog is populated from it on first open. The photo is likewise referenced once and
  * cloned into the dialog rather than emitted twice. Without JavaScript the quote is not
  * clamped at all, so the full text is already on the page and nothing is lost.
  *
- * No request is made by any interaction. View more reveals already-rendered cards and the
- * dialogs read from markup already present, so a visitor click cannot trigger a database
- * or provider query. The optional query-string category filter keeps that property: it
- * narrows the one page query the shortcode was already going to run, and never reaches
- * out to a review provider.
+ * View more reveals already-rendered cards first. At a server-page boundary the browser
+ * may request the next capped page from this WordPress site. No visitor path contacts a
+ * review provider. The optional query-string category filter applies to each local page.
  *
  * @package ShootCalTestimonials
  */
@@ -135,13 +131,22 @@ class Shortcode {
 		$filter = 'show' === $atts['filter'];
 		if ( $filter ) { $allow_query = 'on'; }
 		$category = $this->resolve_category( (string) $atts['category'], $allow_query );
-		$posts    = $this->query( $category, $total, (string) $atts['orderby'], (string) $atts['order'] );
+		$page     = 'show' === $more ? $this->review_page() : 1;
+		$query    = $this->query( $category, $total, (string) $atts['orderby'], (string) $atts['order'], $page, 'show' === $more );
+		$posts    = $query->posts;
+		if ( array() === $posts && $page > 1 && (int) $query->found_posts > 0 ) {
+			$page = 1;
+			$query = $this->query( $category, $total, (string) $atts['orderby'], (string) $atts['order'], $page, true );
+			$posts = $query->posts;
+		}
 
 		if ( array() === $posts ) {
 			return '';
 		}
 
 		$instance = wp_unique_id( 'sct-list-' );
+		$next_url = 'show' === $more && $page < (int) $query->max_num_pages ? $this->page_url( $page + 1, $category, $instance ) : '';
+		$previous_url = 'show' === $more && $page > 1 ? $this->page_url( $page - 1, $category, $instance ) : '';
 		$rendered_posts = array();
 		$items   = '';
 		$dialogs = '';
@@ -162,11 +167,19 @@ class Shortcode {
 		// outside each card so an ancestor transform or overflow cannot trap a modal.
 		$button = '';
 
-		if ( 'show' === $more && count( $rendered_posts ) > $count ) {
+		if ( 'show' === $more && ( count( $rendered_posts ) > $count || '' !== $next_url ) ) {
 			$button = sprintf(
 				'<div class="sct-testimonials__more"><button type="button" class="sct-more" data-sct-more>%s</button></div>',
 				esc_html__( 'View more', 'shootcal-testimonials' )
 			);
+		}
+		$pagination = '';
+		if ( '' !== $previous_url || '' !== $next_url ) {
+			$pagination = '<nav class="sct-pages" aria-label="' . esc_attr__( 'Review pages', 'shootcal-testimonials' ) . '">';
+			if ( '' !== $previous_url ) { $pagination .= '<a class="sct-pages__previous" href="' . esc_url( $previous_url ) . '">' . esc_html__( 'Previous reviews', 'shootcal-testimonials' ) . '</a>'; }
+			$pagination .= '<span class="sct-pages__status">' . esc_html( sprintf( /* translators: 1: page number; 2: total number of pages. */ __( 'Page %1$d of %2$d', 'shootcal-testimonials' ), $page, (int) $query->max_num_pages ) ) . '</span>';
+			if ( '' !== $next_url ) { $pagination .= '<a class="sct-pages__next" href="' . esc_url( $next_url ) . '" data-sct-next>' . esc_html__( 'Next reviews', 'shootcal-testimonials' ) . '</a>'; }
+			$pagination .= '</nav>';
 		}
 
 		/**
@@ -187,7 +200,7 @@ class Shortcode {
 		do_action_ref_array( 'sct_rendered', array( $rendered_posts, '' !== $button ) );
 
 		return sprintf(
-			'<section id="%8$s" class="sct-section sct-testimonials" style="--sct-lines:%1$d" data-sct-columns="%2$d" data-sct-initial="%3$d">%4$s<div class="sct-testimonials__grid sct-testimonials__grid--%2$d">%5$s</div>%6$s%7$s</section>',
+			'<section id="%8$s" class="sct-section sct-testimonials" style="--sct-lines:%1$d" data-sct-columns="%2$d" data-sct-initial="%3$d" data-sct-total="%9$d">%4$s<div class="sct-testimonials__grid sct-testimonials__grid--%2$d">%5$s</div>%6$s%10$s%7$s</section>',
 			$lines,
 			$columns,
 			$count,
@@ -195,7 +208,9 @@ class Shortcode {
 			$items,
 			$button,
 			$dialogs,
-			esc_attr( $instance )
+			esc_attr( $instance ),
+			(int) $query->found_posts,
+			$pagination
 		);
 	}
 
@@ -211,7 +226,7 @@ class Shortcode {
 		$label_id = $instance . '-category-label';
 		$out = '<div class="sct-filter"><span id="' . esc_attr( $label_id ) . '">' . esc_html__( 'Review category', 'shootcal-testimonials' ) . '</span><details class="sct-filter__dropdown"><summary aria-describedby="' . esc_attr( $label_id ) . '">' . esc_html( $selected ) . '</summary><nav class="sct-filter__options" aria-label="' . esc_attr__( 'Review categories', 'shootcal-testimonials' ) . '">';
 		foreach ( $choices as $slug => $name ) {
-			$href = add_query_arg( self::QUERY_VAR, $slug, $url ) . '#' . $instance;
+			$href = remove_query_arg( 'sct_review_page', add_query_arg( self::QUERY_VAR, $slug, $url ) ) . '#' . $instance;
 			$out .= '<a href="' . esc_url( $href ) . '"' . ( $category === $slug ? ' aria-current="page"' : '' ) . '>' . esc_html( $name ) . '</a>';
 		}
 		return $out . '</nav></details></div>';
@@ -296,7 +311,7 @@ class Shortcode {
 	 * @param string $order    ASC or DESC.
 	 * @return \WP_Post[]
 	 */
-	private function query( string $category, int $count, string $orderby, string $order ): array {
+	private function query( string $category, int $count, string $orderby, string $order, int $page, bool $paginate ): \WP_Query {
 		$order = 'ASC' === strtoupper( $order ) ? 'ASC' : 'DESC';
 
 		$args = array(
@@ -304,7 +319,8 @@ class Shortcode {
 			'post_status'    => 'publish',
 			'posts_per_page' => $count,
 			'order'          => $order,
-			'no_found_rows'  => true,
+			'no_found_rows'  => ! $paginate,
+			'paged'          => $page,
 		);
 
 		if ( 'rating' === $orderby ) {
@@ -330,9 +346,25 @@ class Shortcode {
 			);
 		}
 
-		$query = new \WP_Query( $args );
+		return new \WP_Query( $args );
+	}
 
-		return is_array( $query->posts ) ? $query->posts : array();
+	/** Page navigation is bounded to prevent an untrusted huge SQL offset. */
+	private function review_page(): int {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only public pagination.
+		if ( ! isset( $_GET['sct_review_page'] ) || ! is_string( $_GET['sct_review_page'] ) ) { return 1; }
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only public pagination.
+		$raw = sanitize_text_field( wp_unslash( $_GET['sct_review_page'] ) );
+		return ctype_digit( $raw ) ? max( 1, min( 100, (int) $raw ) ) : 1;
+	}
+
+	/** Preserve the selected category in ordinary, crawlable page links. */
+	private function page_url( int $page, string $category, string $instance ): string {
+		$url = get_permalink( get_queried_object_id() );
+		if ( ! is_string( $url ) || '' === $url ) { return ''; }
+		$args = array( 'sct_review_page' => $page );
+		if ( '' !== $category ) { $args[ self::QUERY_VAR ] = $category; }
+		return add_query_arg( $args, $url ) . '#' . rawurlencode( $instance );
 	}
 
 	/**
@@ -415,8 +447,9 @@ class Shortcode {
 		}
 		$attribution .= '</figcaption>';
 
+		$full_photo = Config::get( 'show_photo', true ) && has_post_thumbnail( $post ) ? (string) wp_get_attachment_image_url( get_post_thumbnail_id( $post ), 'full' ) : '';
 		$card = sprintf(
-			'<figure class="%1$s" data-sct-card>%2$s<div class="sct-testimonial__body">%3$s<blockquote class="sct-testimonial__quote" data-sct-quote>%4$s</blockquote>%5$s%6$s</div><button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="%7$s">%8$s</button></figure>',
+			'<figure class="%1$s" data-sct-card data-sct-post="%9$d" data-sct-photo="%10$s">%2$s<div class="sct-testimonial__body">%3$s<blockquote class="sct-testimonial__quote" data-sct-quote>%4$s</blockquote>%5$s%6$s</div><button type="button" class="sct-testimonial__open" data-sct-open aria-haspopup="dialog" aria-controls="%7$s">%8$s</button></figure>',
 			esc_attr( implode( ' ', $classes ) ),
 			$media,
 			$stars,
@@ -424,7 +457,9 @@ class Shortcode {
 			$attribution,
 			'' === $source_line && Config::get( 'show_source', true ) ? '<p class="sct-source sct-source--empty" aria-hidden="true"><span class="sct-source__label"></span></p>' : $source_line,
 			esc_attr( $dialog_id ),
-			esc_html__( 'Read full review', 'shootcal-testimonials' )
+			esc_html__( 'Read full review', 'shootcal-testimonials' ),
+			$post->ID,
+			esc_url( $full_photo )
 		);
 
 		$dialog = $this->render_dialog( $dialog_id, $name, $date, $rating, $source_line, $category_html );

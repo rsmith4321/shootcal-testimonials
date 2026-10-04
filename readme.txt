@@ -4,11 +4,11 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.6.2
+Stable tag: 0.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Modern testimonials with transparent review sources, category filters, full-review dialogs and native WordPress storage.
+Modern testimonials with transparent review sources, category filters, swipeable review details and native WordPress storage.
 
 == Description ==
 
@@ -30,19 +30,19 @@ Source attribution helps readers verify where a review appeared. It does not est
 
 Show category labels beneath reviewer names and choose an icon in Testimonials → Testimonial Categories. Built-in ring, heart, people, graduation cap, house and camera icons are from Font Awesome Free 6.7.2 (CC BY 4.0, Fonticons, Inc.; license and source bundled). Choose Custom SVG to paste a static shape/path icon. Scripts, links, embedded content and external resources are rejected; invalid custom submissions keep the previous icon. Icons are decorative and do not replace category text.
 
-New installations default to 21 initial reviews. Site settings and the block/shortcode count can change that. View more reveals at least 9 cached reviews per click, rounded to complete rows (10 for two columns), or the remaining reviews when fewer are left. The render ceiling remains 60. Existing saved site/block counts are preserved unless changed by their owner.
+New installations default to 21 initial reviews. Site settings and the block/shortcode count can change that. Scrolling reveals at least 9 already-rendered reviews at a time, rounded to complete rows (10 for two columns). The View more button offers the same action for keyboard users. Each server-rendered page remains capped at 60; scrolling can fetch later pages from this WordPress site. Ordinary page links preserve access without JavaScript. Existing saved site/block counts are preserved unless changed by their owner.
 
 The review form can show a small ShootCal Testimonials link at its bottom left. This credit is optional, off by default, and can be enabled or disabled in Testimonial Settings. It does not affect any plugin feature.
 
 **Rendering**
 
-Cards float on a layered shadow and hold a uniform height across the grid. Each card shows a fixed-aspect media area (the photo, or the reviewer's initials when there is none), a quote clamped to a set number of lines, attribution pinned to the bottom, and a source credit line. Clicking a card opens a native `<dialog>` with the complete review, which gives focus management, Escape to close, a backdrop and an inert background for free, with no lightbox library.
+Cards float on a layered shadow and hold a uniform height across the grid. Each card shows a fixed-aspect media area (the photo, or the reviewer's initials when there is none), a quote clamped to a set number of lines, attribution pinned to the bottom, and a source credit line. Clicking a card opens a locally bundled PhotoSwipe lightbox with the complete review. Swipe, arrow keys, Escape and a focus-trapped close control are available. Text-only reviews are included. The existing native dialog remains as a fallback if the PhotoSwipe module cannot load.
 
 The complete quote appears in the HTML exactly once, inside the card, and the dialog is populated from it on first open. The photo is referenced once and cloned into the dialog rather than emitted twice.
 
-**No visitor-triggered requests**
+**Local pagination and no provider requests**
 
-"View more" reveals cards that are already rendered, and the dialogs read from markup already on the page. Category links use normal same-site navigation and work without JavaScript. No interaction calls a review provider.
+Scrolling and View more first reveal cards that are already rendered. Once those are exhausted, they fetch the next published-review page from this WordPress site. The lightbox reads loaded card markup and provides a next-page link at a page boundary. Category links and page links use normal same-site navigation and work without JavaScript. No interaction calls a review provider.
 
 **Progressive enhancement**
 
@@ -99,7 +99,7 @@ Because turning it on for your own reviews is more likely to cost you than to he
 
 = Does the View more button make a request? =
 
-No. It reveals at least nine reviews already in the page HTML, rounded to full rows, moving focus to the first newly revealed card and announcing progress through a live region. When the remaining reviews are revealed the button removes itself.
+It first reveals at least nine reviews already in the page HTML, rounded to full rows. After the current page is exhausted, it requests the next page from this WordPress site. Keyboard activation moves focus to the first newly revealed card and announces progress. Automatic scrolling uses the same batch logic. A visible Next reviews link is always available at a page boundary.
 
 = Where do public form submissions go? =
 
@@ -131,9 +131,14 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 
 = How many testimonials can one list show? =
 
-Sixty per list. New installations show 21 initially; with View more enabled, the default total available behind the button is 60. Saved site and block settings are preserved. The ceiling is a page-weight guard rather than a design constraint.
+Sixty per server-rendered page. New installations show 21 initially; with View more enabled, the default first-page total is 60. Later pages are linked and loaded on scroll. Saved site and block settings are preserved. The ceiling is a page-weight guard rather than a library limit.
 
 == Changelog ==
+
+= 0.7.0 =
+* Add locally bundled PhotoSwipe 5.4.4 for swipeable photo and full-review details, including text-only reviews and an explicit next-page continuation.
+* Automatically reveal reviews while scrolling and fetch later published-review pages from WordPress after the 60-card page boundary; retain View more and ordinary category-preserving page links.
+* Keep PhotoSwipe loading conditional, preserve full quotes without JavaScript, and make page boundaries explicit.
 
 = 0.6.2 =
 * Fix single-review lists and make the category selector's All reviews link clear a preset filter.

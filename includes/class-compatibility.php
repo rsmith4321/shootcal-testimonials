@@ -36,6 +36,10 @@ class Compatibility {
 		'.sct-source',
 		'.sct-dialog',
 		'.sct-more',
+		'.sct-pages',
+		'.sct-review-slide',
+		'.sct-review-continue',
+		'.pswp',
 		'.sct-form',
 	);
 

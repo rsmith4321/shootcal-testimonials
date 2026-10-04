@@ -3,8 +3,8 @@
  * Frontend assets.
  *
  * The stylesheet is enqueued only on requests that actually render the shortcode,
- * and the script whenever review dialogs are in use. No render-blocking output on pages
- * that have no testimonials.
+ * and the script whenever review dialogs are in use. PhotoSwipe CSS is list-only and
+ * its JavaScript module loads only when a review is opened.
  *
  * @package ShootCalTestimonials
  */
@@ -87,6 +87,7 @@ class Assets {
 			if ( has_shortcode( $content, 'shootcal_testimonials' ) || has_block( Block::NAME, $content ) || preg_match( '/mode=[\"\']dialog[\"\']/', $content ) ) {
 				wp_enqueue_script( SLUG );
 			}
+			if ( has_shortcode( $content, 'shootcal_testimonials' ) || has_block( Block::NAME, $content ) ) { wp_enqueue_style( SLUG . '-photoswipe' ); }
 		}
 	}
 
@@ -100,6 +101,7 @@ class Assets {
 			array(),
 			self::version_for( 'assets/css/frontend.css' )
 		);
+		wp_register_style( SLUG . '-photoswipe', PLUGIN_URL . 'assets/photoswipe/photoswipe.css', array(), self::version_for( 'assets/photoswipe/photoswipe.css' ) );
 
 		if ( ! wp_script_is( SLUG, 'registered' ) ) {
 			wp_register_script(
@@ -117,6 +119,11 @@ class Assets {
 					'shownSingular' => __( '%shown% of %total% testimonial shown', 'shootcal-testimonials' ),
 					/* translators: %shown% is the visible review count; %total% is the total rendered count. */
 					'shownPlural'   => __( '%shown% of %total% testimonials shown', 'shootcal-testimonials' ),
+					'photoSwipeUrl' => PLUGIN_URL . 'assets/photoswipe/photoswipe.esm.js?ver=' . rawurlencode( self::version_for( 'assets/photoswipe/photoswipe.esm.js' ) ),
+					'moreReviews'   => __( 'More reviews are available', 'shootcal-testimonials' ),
+					'continueReviews' => __( 'Continue to the next reviews', 'shootcal-testimonials' ),
+					'loadingReviews' => __( 'Loading more reviews…', 'shootcal-testimonials' ),
+					'loadFailed' => __( 'More reviews could not be loaded. Use Next reviews to continue.', 'shootcal-testimonials' ),
 				)
 			);
 		}
@@ -165,6 +172,7 @@ class Assets {
 		}
 
 		wp_enqueue_style( SLUG );
+		wp_enqueue_style( SLUG . '-photoswipe' );
 
 		if ( $this->needs_script ) {
 			wp_enqueue_script( SLUG );
