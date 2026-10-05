@@ -850,7 +850,7 @@
 .sct-testimonials:not(.sct-js) .sct-testimonials__more { display: none; }
 .sct-dialog { --sct-radius: 22px; --sct-muted: #5d6672; --sct-line: rgba(15,23,42,.09); border-radius: 22px; }
 .sct-dialog__close:focus-visible { outline: none; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #334155, 0 3px 14px rgba(15,23,42,.22); }
-.sct-source__mark { width: 10px !important; height: auto !important; object-fit: contain !important; margin: 10px !important; flex: 0 0 10px; }
+.sct-source__mark { width: 10px !important; height: auto !important; object-fit: contain !important; margin: 0 10px 0 0 !important; flex: 0 0 10px; }
 .sct-testimonial__categories { color: var(--sct-muted); font-size: .75rem; }
 .sct-js .sct-testimonial__open { min-height: 44px; }
 @media (forced-colors: active) { .sct-dialog__close:focus-visible { outline: 2px solid ButtonText; } }
@@ -951,7 +951,8 @@
 /* The source row owns its vertical spacing; no extra gap above Read full review. */
 .sct-testimonial__body { padding-bottom: 0; }
 /* Category labels occupy a calm, separate line beneath the reviewer. */
-.sct-testimonial__by { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: .6rem; row-gap: .35rem; }
+.sct-testimonial__by { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: .6rem; row-gap: .35rem; text-align: start; }
+.sct-testimonial__name { justify-self: start; }
 .sct-testimonial__date { font-size: .7rem; text-align: right; }
 .sct-testimonial__date::before { content: none; }
 .sct-testimonial__categories, .sct-dialog__categories { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .35rem .8rem; width: 100%; color: #6b7280 !important; font-size: .72rem; }
