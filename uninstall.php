@@ -21,7 +21,7 @@ delete_option( 'shootcal_testimonials_storage_version' );
 delete_option( 'shootcal_testimonials_render_cache_version' );
 
 if ( defined( 'SHOOTCAL_TESTIMONIALS_REMOVE_CONTENT' ) && true === constant( 'SHOOTCAL_TESTIMONIALS_REMOVE_CONTENT' ) ) {
-	$posts = get_posts(
+	$shootcal_testimonials_posts = get_posts(
 		array(
 			'post_type'      => 'shootcal_testimonial',
 			'post_status'    => array( 'publish', 'pending', 'draft', 'private', 'future', 'trash' ),
@@ -31,13 +31,13 @@ if ( defined( 'SHOOTCAL_TESTIMONIALS_REMOVE_CONTENT' ) && true === constant( 'SH
 		)
 	);
 
-	foreach ( $posts as $post_id ) {
+	foreach ( $shootcal_testimonials_posts as $shootcal_testimonials_post_id ) {
 		// Force-delete so nothing is left in Trash holding references to media.
-		wp_delete_post( (int) $post_id, true );
+		wp_delete_post( (int) $shootcal_testimonials_post_id, true );
 	}
 
 	if ( ! taxonomy_exists( 'shootcal_testimonials_category' ) ) { register_taxonomy( 'shootcal_testimonials_category', 'shootcal_testimonial' ); }
-	$terms = get_terms(
+	$shootcal_testimonials_terms = get_terms(
 		array(
 			'taxonomy'   => 'shootcal_testimonials_category',
 			'hide_empty' => false,
@@ -45,9 +45,9 @@ if ( defined( 'SHOOTCAL_TESTIMONIALS_REMOVE_CONTENT' ) && true === constant( 'SH
 		)
 	);
 
-	if ( ! is_wp_error( $terms ) ) {
-		foreach ( $terms as $term_id ) {
-			wp_delete_term( (int) $term_id, 'shootcal_testimonials_category' );
+	if ( ! is_wp_error( $shootcal_testimonials_terms ) ) {
+		foreach ( $shootcal_testimonials_terms as $shootcal_testimonials_term_id ) {
+			wp_delete_term( (int) $shootcal_testimonials_term_id, 'shootcal_testimonials_category' );
 		}
 	}
 }
