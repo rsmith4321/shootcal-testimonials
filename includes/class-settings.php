@@ -29,7 +29,7 @@ class Settings {
 	/**
 	 * Nonce action.
 	 */
-	public const NONCE = 'sct_settings';
+	public const NONCE = 'shootcal_testimonials_settings';
 
 	/**
 	 * Hook registration.
@@ -57,11 +57,11 @@ class Settings {
 	 * Persist a submitted settings form.
 	 */
 	public function handle_post(): void {
-		if ( ! isset( $_POST['sct_settings_nonce'] ) ) {
+		if ( ! isset( $_POST['shootcal_testimonials_settings_nonce'] ) ) {
 			return;
 		}
 
-		if ( ! is_string( $_POST['sct_settings_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['sct_settings_nonce'] ) ), self::NONCE ) ) {
+		if ( ! is_string( $_POST['shootcal_testimonials_settings_nonce'] ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $_POST['shootcal_testimonials_settings_nonce'] ) ), self::NONCE ) ) {
 			wp_die( esc_html__( 'Security check failed. Please try again.', 'shootcal-testimonials' ) );
 		}
 		if ( ! current_user_can( self::CAPABILITY ) ) {
@@ -124,7 +124,7 @@ class Settings {
 			<p><?php esc_html_e( 'These defaults apply to every testimonial list. Individual lists can override them with shortcode attributes.', 'shootcal-testimonials' ); ?></p>
 
 			<form method="post" action="">
-				<?php wp_nonce_field( self::NONCE, 'sct_settings_nonce' ); ?>
+				<?php wp_nonce_field( self::NONCE, 'shootcal_testimonials_settings_nonce' ); ?>
 
 				<h2><?php esc_html_e( 'Layout', 'shootcal-testimonials' ); ?></h2>
 				<table class="form-table" role="presentation">

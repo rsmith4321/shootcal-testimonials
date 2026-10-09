@@ -11,7 +11,7 @@
  *   wp eval-file bin/import-testimonials-showcase.php /path/receipts.json apply
  *
  * The receipts file is the source-lookup audit produced by tools/survey-legacy.php and the
- * platform reachability probes. It supplies per-record sct_source and sct_source_lookup
+ * platform reachability probes. It supplies per-record shootcal_testimonials_source and shootcal_testimonials_source_lookup
  * overrides plus the evidence behind them, so provenance is recorded from receipts rather
  * than inferred at import time.
  *
@@ -74,10 +74,10 @@ foreach ( $cli_args as $arg ) {
 }
 
 $source_type = 'ttshowcase';
-$target_type = 'sct_testimonial';
-$identity_key = 'sct_legacy_id';
-$state_key = 'sct_import_state';
-$snapshot_key = 'sct_import_core_snapshot';
+$target_type = 'shootcal_testimonial';
+$identity_key = 'shootcal_testimonials_legacy_id';
+$state_key = 'shootcal_testimonials_import_state';
+$snapshot_key = 'shootcal_testimonials_import_core_snapshot';
 
 /** A snapshot detects edits to a draft left by an interrupted import. */
 $core_snapshot = static function ( \WP_Post $post ): string {
@@ -148,11 +148,11 @@ foreach ( $overrides as $legacy_key => $override ) {
 }
 /* Meta carried across, legacy key to new key. */
 $meta_map = array(
-	'_aditional_info_rating'         => 'sct_rating',
-	'_aditional_info_review_title'   => 'sct_review_title',
-	'_rsp_google_review_id'          => 'sct_source_review_id',
-	'_rsp_google_reviewer_profile'   => 'sct_reviewer_profile_url',
-	'_rsp_review_date_provenance'    => 'sct_date_provenance',
+	'_aditional_info_rating'         => 'shootcal_testimonials_rating',
+	'_aditional_info_review_title'   => 'shootcal_testimonials_review_title',
+	'_rsp_google_review_id'          => 'shootcal_testimonials_source_review_id',
+	'_rsp_google_reviewer_profile'   => 'shootcal_testimonials_reviewer_profile_url',
+	'_rsp_review_date_provenance'    => 'shootcal_testimonials_date_provenance',
 );
 
 /**
@@ -162,9 +162,9 @@ $meta_map = array(
  * mistaken for a review source URL.
  */
 $legacy_keep = array(
-	'_aditional_info_url'        => 'sct_legacy_url',
-	'_aditional_info_custom_url' => 'sct_legacy_custom_url',
-	'_answer_info_answer'        => 'sct_legacy_response',
+	'_aditional_info_url'        => 'shootcal_testimonials_legacy_url',
+	'_aditional_info_custom_url' => 'shootcal_testimonials_legacy_custom_url',
+	'_answer_info_answer'        => 'shootcal_testimonials_legacy_response',
 );
 
 /** Never carried across. Listed explicitly so the decision is visible in the receipt. */
@@ -236,7 +236,7 @@ $report['source_found'] = count( $source_posts );
 // Term map, built from the legacy taxonomy so names and slugs survive.
 $term_map     = array();
 $new_terms    = 0;
-$sct_new_term_ids = array();
+$shootcal_testimonials_new_term_ids = array();
 $legacy_terms = get_terms(
 	array(
 		'taxonomy'   => 'ttshowcase_groups',
@@ -246,7 +246,7 @@ $legacy_terms = get_terms(
 
 if ( ! is_wp_error( $legacy_terms ) ) {
 	foreach ( $legacy_terms as $term ) {
-		$existing_term = get_term_by( 'slug', $term->slug, 'sct_category' );
+		$existing_term = get_term_by( 'slug', $term->slug, 'shootcal_testimonials_category' );
 
 		if ( $existing_term ) {
 			$term_map[ (int) $term->term_id ] = (int) $existing_term->term_id;
@@ -259,14 +259,14 @@ if ( ! is_wp_error( $legacy_terms ) ) {
 			continue;
 		}
 
-		$created = wp_insert_term( $term->name, 'sct_category', array( 'slug' => $term->slug, 'description' => $term->description ) );
+		$created = wp_insert_term( $term->name, 'shootcal_testimonials_category', array( 'slug' => $term->slug, 'description' => $term->description ) );
 
 		if ( is_wp_error( $created ) ) {
 			WP_CLI::error( 'Category creation failed: ' . $created->get_error_message() );
 		}
 
 		$term_map[ (int) $term->term_id ] = (int) $created['term_id'];
-		$sct_new_term_ids[] = (int) $created['term_id'];
+		$shootcal_testimonials_new_term_ids[] = (int) $created['term_id'];
 		++$new_terms;
 	}
 }
@@ -276,9 +276,9 @@ if ( is_wp_error( $legacy_terms ) ) { WP_CLI::error( 'Unable to read legacy cate
 if ( $apply ) {
 	foreach ( $legacy_terms as $term ) {
 		$mapped = $term_map[ (int) $term->term_id ] ?? 0;
-		$target = get_term( $mapped, 'sct_category' );
-		if ( in_array( $mapped, $sct_new_term_ids, true ) && $term->parent && ! is_wp_error( $target ) && $target && ! $target->parent ) {
-			$result = wp_update_term( $mapped, 'sct_category', array( 'parent' => $term_map[ (int) $term->parent ] ?? 0 ) );
+		$target = get_term( $mapped, 'shootcal_testimonials_category' );
+		if ( in_array( $mapped, $shootcal_testimonials_new_term_ids, true ) && $term->parent && ! is_wp_error( $target ) && $target && ! $target->parent ) {
+			$result = wp_update_term( $mapped, 'shootcal_testimonials_category', array( 'parent' => $term_map[ (int) $term->parent ] ?? 0 ) );
 			if ( is_wp_error( $result ) ) { WP_CLI::error( 'Category hierarchy migration failed.' ); }
 		}
 	}
@@ -351,7 +351,7 @@ foreach ( $source_posts as $source ) {
 	/*
 	 * Source and lookup provenance.
 	 *
-	 * sct_source is google only where the legacy record stores _rsp_google_review_id, which
+	 * shootcal_testimonials_source is google only where the legacy record stores _rsp_google_review_id, which
 	 * is written by the Google Business Profile capture workflow rather than typed in by an
 	 * editor, so it is first-party evidence. Every other legacy record stores no
 	 * third-party platform identifier at all, so its source is direct: naming a platform
@@ -361,7 +361,7 @@ foreach ( $source_posts as $source ) {
 	 * found the photographer, not where the client published the review, which is recorded
 	 * in the receipts file under rejected_mentions.
 	 *
-	 * sct_source_lookup is not-found for a direct record because there is no external
+	 * shootcal_testimonials_source_lookup is not-found for a direct record because there is no external
 	 * record to reconcile against, and blocked for a platform that refused or could not be
 	 * read. matched is only ever set from a receipt that documents the confirmation.
 	 */
@@ -501,9 +501,9 @@ foreach ( $source_posts as $source ) {
 	// Only fill missing fields on a pending import. A different existing value may
 	// be an editor's correction, so stop instead of overwriting it.
 	$expected_meta = array(
-		'sct_source'        => $src,
-		'sct_source_lookup' => $lookup,
-		'sct_source_note'   => $src_note,
+		'shootcal_testimonials_source'        => $src,
+		'shootcal_testimonials_source_lookup' => $lookup,
+		'shootcal_testimonials_source_note'   => $src_note,
 	);
 	foreach ( $meta_map as $from => $to ) {
 		$value = get_post_meta( $source_id, $from, true );
@@ -545,7 +545,7 @@ foreach ( $source_posts as $source ) {
 		WP_CLI::error( 'Unable to preserve the photo on review ' . $new_id . '; retry after checking storage.' );
 	}
 
-	$current_terms = wp_get_object_terms( $new_id, 'sct_category', array( 'fields' => 'ids' ) );
+	$current_terms = wp_get_object_terms( $new_id, 'shootcal_testimonials_category', array( 'fields' => 'ids' ) );
 	if ( is_wp_error( $current_terms ) ) { WP_CLI::error( 'Cannot read categories on review ' . $new_id ); }
 	$current_terms = array_map( 'intval', $current_terms );
 	sort( $current_terms );
@@ -553,10 +553,10 @@ foreach ( $source_posts as $source ) {
 		WP_CLI::error( 'In-progress review ' . $new_id . ' has different categories; inspect them before retrying.' );
 	}
 	if ( array() === $current_terms && array() !== $target_terms ) {
-		$assigned = wp_set_object_terms( $new_id, $target_terms, 'sct_category' );
+		$assigned = wp_set_object_terms( $new_id, $target_terms, 'shootcal_testimonials_category' );
 		if ( is_wp_error( $assigned ) ) { WP_CLI::error( 'Category assignment failed for review ' . $new_id . ': ' . $assigned->get_error_message() ); }
 	}
-	$stored_terms = wp_get_object_terms( $new_id, 'sct_category', array( 'fields' => 'ids' ) );
+	$stored_terms = wp_get_object_terms( $new_id, 'shootcal_testimonials_category', array( 'fields' => 'ids' ) );
 	if ( is_wp_error( $stored_terms ) ) { WP_CLI::error( 'Cannot verify categories on review ' . $new_id ); }
 	$stored_terms = array_map( 'intval', $stored_terms );
 	sort( $stored_terms );
@@ -583,7 +583,7 @@ foreach ( $source_posts as $source ) {
 		$verified_post->post_date !== $source->post_date || $verified_post->post_date_gmt !== $source->post_date_gmt ) {
 		WP_CLI::error( 'Review ' . $new_id . ' has an incorrect final status/date; it remains in progress.' );
 	}
-	$verified_terms = wp_get_object_terms( $new_id, 'sct_category', array( 'fields' => 'ids' ) );
+	$verified_terms = wp_get_object_terms( $new_id, 'shootcal_testimonials_category', array( 'fields' => 'ids' ) );
 	if ( is_wp_error( $verified_terms ) ) { WP_CLI::error( 'Cannot verify final categories on review ' . $new_id ); }
 	$verified_terms = array_map( 'intval', $verified_terms );
 	sort( $verified_terms );
@@ -650,7 +650,7 @@ if ( $apply ) {
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
 			'no_found_rows'  => true,
-			'meta_key'       => 'sct_legacy_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Offline migration identity audit.
+			'meta_key'       => 'shootcal_testimonials_legacy_id', // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key -- Offline migration identity audit.
 		)
 	);
 
@@ -666,8 +666,8 @@ if ( $apply ) {
 
 	foreach ( $audit_ids as $audit_id ) {
 		$audit_id = (int) $audit_id;
-		$a_src    = (string) get_post_meta( $audit_id, 'sct_source', true );
-		$a_lookup = (string) get_post_meta( $audit_id, 'sct_source_lookup', true );
+		$a_src    = (string) get_post_meta( $audit_id, 'shootcal_testimonials_source', true );
+		$a_lookup = (string) get_post_meta( $audit_id, 'shootcal_testimonials_source_lookup', true );
 		if ( 'pending' === get_post_meta( $audit_id, $state_key, true ) ) {
 			$audit['incomplete_state'][] = $audit_id;
 		}
@@ -698,15 +698,15 @@ if ( $apply ) {
 	}
 
 	if ( array() !== $audit['empty_source'] ) {
-		$hard_failures[] = 'records with empty sct_source: ' . count( $audit['empty_source'] );
+		$hard_failures[] = 'records with empty shootcal_testimonials_source: ' . count( $audit['empty_source'] );
 	}
 
 	if ( array() !== $audit['empty_lookup'] ) {
-		$hard_failures[] = 'records with empty sct_source_lookup: ' . count( $audit['empty_lookup'] );
+		$hard_failures[] = 'records with empty shootcal_testimonials_source_lookup: ' . count( $audit['empty_lookup'] );
 	}
 
 	if ( array() !== $audit['invalid_lookup'] ) {
-		$hard_failures[] = 'records with invalid sct_source_lookup: ' . count( $audit['invalid_lookup'] );
+		$hard_failures[] = 'records with invalid shootcal_testimonials_source_lookup: ' . count( $audit['invalid_lookup'] );
 	}
 
 	$report['hard_failures'] = $hard_failures;
@@ -718,17 +718,7 @@ if ( $apply ) {
 	}
 }
 
-/* Write the per-record provenance map next to the report so it is itself a receipt. */
-$report['provenance_sample'] = array_slice( $provenance, 0, 5, true );
-$report['provenance_count']  = count( $provenance );
-
+/* Emit complete provenance to the CLI stream; the caller controls receipt storage. */
+$report['provenance'] = $provenance;
+$report['provenance_count'] = count( $provenance );
 fwrite( STDOUT, wp_json_encode( $report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) . "\n" );
-
-if ( $apply && '' !== $receipts_path ) {
-	$prov_file = preg_replace( '/\.json$/i', '', $receipts_path ) . '-applied-provenance.json';
-	$written   = file_put_contents( $prov_file, wp_json_encode( $provenance, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) . "\n" );
-
-	if ( false !== $written ) {
-		fwrite( STDOUT, "applied provenance written to {$prov_file} ({$written} bytes)\n" );
-	}
-}

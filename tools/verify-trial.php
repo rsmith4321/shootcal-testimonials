@@ -4,7 +4,7 @@
  *
  * Produces one receipt covering the server-side checks that the trial must satisfy:
  * plugin active and at the right version, imported record count, complete and valid
- * sct_source and sct_source_lookup on every record, the untouched legacy post count,
+ * shootcal_testimonials_source and shootcal_testimonials_source_lookup on every record, the untouched legacy post count,
  * block registration, shortcode availability, and that two different category filters
  * really do render two different card sets.
  *
@@ -71,21 +71,21 @@ $out['testimonial_plugins'] = $legacy_active;
 
 /* ------------------------------------------------------------ post counts */
 
-$sct_counts = (array) wp_count_posts( 'sct_testimonial' );
+$shootcal_testimonials_counts = (array) wp_count_posts( 'shootcal_testimonial' );
 $tt_counts  = (array) wp_count_posts( 'ttshowcase' );
 
 $out['counts'] = array(
-	'sct_testimonial_by_status' => array_filter( $sct_counts, static fn( $v ): bool => (int) $v > 0 ),
-	'sct_testimonial_any'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'sct_testimonial'" ),
-	'sct_testimonial_trash'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'sct_testimonial' AND post_status = 'trash'" ),
+	'shootcal_testimonial_by_status' => array_filter( $shootcal_testimonials_counts, static fn( $v ): bool => (int) $v > 0 ),
+	'shootcal_testimonial_any'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'shootcal_testimonial'" ),
+	'shootcal_testimonial_trash'     => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'shootcal_testimonial' AND post_status = 'trash'" ),
 	'ttshowcase_published'      => (int) ( $tt_counts['publish'] ?? 0 ),
 	'ttshowcase_any'            => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = 'ttshowcase'" ),
 );
 
 /* ------------------------------------------------- provenance completeness */
 
-$sct_ids = array_map( 'intval', (array) $wpdb->get_col(
-	"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'sct_testimonial' ORDER BY ID ASC"
+$shootcal_testimonials_ids = array_map( 'intval', (array) $wpdb->get_col(
+	"SELECT ID FROM {$wpdb->posts} WHERE post_type = 'shootcal_testimonial' ORDER BY ID ASC"
 ) );
 
 $valid_lookups = array( 'matched', 'not-found', 'blocked' );
@@ -102,10 +102,10 @@ $bad_lookup   = array();
 $bad_source   = array();
 $empty_note   = array();
 
-foreach ( $sct_ids as $id ) {
-	$src    = trim( (string) get_post_meta( $id, 'sct_source', true ) );
-	$lookup = trim( (string) get_post_meta( $id, 'sct_source_lookup', true ) );
-	$note   = trim( (string) get_post_meta( $id, 'sct_source_note', true ) );
+foreach ( $shootcal_testimonials_ids as $id ) {
+	$src    = trim( (string) get_post_meta( $id, 'shootcal_testimonials_source', true ) );
+	$lookup = trim( (string) get_post_meta( $id, 'shootcal_testimonials_source_lookup', true ) );
+	$note   = trim( (string) get_post_meta( $id, 'shootcal_testimonials_source_note', true ) );
 
 	if ( '' === $src ) {
 		$empty_source[] = $id;
@@ -136,7 +136,7 @@ ksort( $lookup_table );
 ksort( $pair_table );
 
 $out['provenance'] = array(
-	'records_checked'       => count( $sct_ids ),
+	'records_checked'       => count( $shootcal_testimonials_ids ),
 	'source_table'          => $source_table,
 	'lookup_table'          => $lookup_table,
 	'platform_lookup_table' => $pair_table,
@@ -151,16 +151,16 @@ $out['provenance'] = array(
 /* The two Google-sourced records, called out by name. */
 $google_rows = array();
 
-foreach ( $sct_ids as $id ) {
-	if ( 'google' === trim( (string) get_post_meta( $id, 'sct_source', true ) ) ) {
+foreach ( $shootcal_testimonials_ids as $id ) {
+	if ( 'google' === trim( (string) get_post_meta( $id, 'shootcal_testimonials_source', true ) ) ) {
 		$google_rows[] = array(
 			'id'            => $id,
 			'title'         => (string) get_post_field( 'post_title', $id ),
-			'legacy_id'     => (string) get_post_meta( $id, 'sct_legacy_id', true ),
-			'lookup'        => (string) get_post_meta( $id, 'sct_source_lookup', true ),
-			'review_id'     => substr( (string) get_post_meta( $id, 'sct_source_review_id', true ), 0, 24 ) . '...',
-			'profile_url'   => (string) get_post_meta( $id, 'sct_reviewer_profile_url', true ),
-			'rating'        => (string) get_post_meta( $id, 'sct_rating', true ),
+			'legacy_id'     => (string) get_post_meta( $id, 'shootcal_testimonials_legacy_id', true ),
+			'lookup'        => (string) get_post_meta( $id, 'shootcal_testimonials_source_lookup', true ),
+			'review_id'     => substr( (string) get_post_meta( $id, 'shootcal_testimonials_source_review_id', true ), 0, 24 ) . '...',
+			'profile_url'   => (string) get_post_meta( $id, 'shootcal_testimonials_reviewer_profile_url', true ),
+			'rating'        => (string) get_post_meta( $id, 'shootcal_testimonials_rating', true ),
 		);
 	}
 }
@@ -169,7 +169,7 @@ $out['google_sourced_records'] = $google_rows;
 
 /* --------------------------------------------------------------- taxonomy */
 
-$terms = get_terms( array( 'taxonomy' => 'sct_category', 'hide_empty' => false ) );
+$terms = get_terms( array( 'taxonomy' => 'shootcal_testimonials_category', 'hide_empty' => false ) );
 $term_rows = array();
 
 if ( ! is_wp_error( $terms ) ) {
@@ -184,7 +184,7 @@ if ( ! is_wp_error( $terms ) ) {
 
 usort( $term_rows, static fn( $a, $b ): int => $b['count'] <=> $a['count'] );
 
-$out['sct_category_terms'] = $term_rows;
+$out['shootcal_testimonials_category_terms'] = $term_rows;
 
 /* ------------------------------------------------------- block and forms */
 
@@ -251,9 +251,9 @@ foreach ( $probe_slugs as $slug ) {
 	$html = (string) do_shortcode( '[shootcal_testimonials allow_query="on" count="4"]' );
 	unset( $html );
 
-	$_GET['sct_category'] = $slug;
+	$_GET['shootcal_testimonials_category'] = $slug;
 	$html2                = (string) do_shortcode( '[shootcal_testimonials allow_query="on" count="4"]' );
-	unset( $_GET['sct_category'] );
+	unset( $_GET['shootcal_testimonials_category'] );
 
 	preg_match_all( '/sct-dialog-(\d+)/', $html2, $d2 );
 

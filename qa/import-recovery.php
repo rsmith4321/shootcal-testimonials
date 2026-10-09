@@ -19,7 +19,7 @@
 declare( strict_types=1 );
 
 if ( ! defined( 'WP_CLI' ) || ! WP_CLI || '1' !== getenv( 'SCT_IMPORT_RECOVERY_TEST' ) ||
-	! in_array( wp_parse_url( home_url(), PHP_URL_HOST ), array( '127.0.0.1', 'localhost' ), true ) ) {
+	! in_array( wp_parse_url( home_url(), PHP_URL_HOST ), array( '127.0.0.1', 'localhost', 'shootcal-plugin-dev.local' ), true ) ) {
 	throw new RuntimeException( 'This fixture requires an explicit disposable localhost WordPress run.' );
 }
 
@@ -27,7 +27,7 @@ register_post_type( 'ttshowcase', array( 'public' => false ) );
 register_taxonomy( 'ttshowcase_groups', 'ttshowcase', array( 'hierarchical' => true ) );
 
 $mode = is_array( $args ?? null ) ? (string) ( $args[0] ?? '' ) : '';
-$fixture = get_option( 'sct_import_recovery_fixture', array() );
+$fixture = get_option( 'shootcal_testimonials_import_recovery_fixture', array() );
 $importer = dirname( __DIR__ ) . '/bin/import-testimonials-showcase.php';
 
 $check = static function ( bool $condition, string $message ): void {
@@ -35,10 +35,10 @@ $check = static function ( bool $condition, string $message ): void {
 };
 $targets = static function ( int $legacy_id ): array {
 	return get_posts( array(
-		'post_type'      => 'sct_testimonial',
+		'post_type'      => 'shootcal_testimonial',
 		'post_status'    => array( 'publish', 'pending', 'draft', 'private', 'future', 'trash' ),
 		'posts_per_page' => -1,
-		'meta_key'       => 'sct_legacy_id',
+		'meta_key'       => 'shootcal_testimonials_legacy_id',
 		'meta_value'     => $legacy_id,
 	) );
 };
@@ -60,7 +60,7 @@ if ( 'setup' === $mode ) {
 	update_post_meta( $legacy_id, '_aditional_info_short_testimonial', wp_slash( $quote ) );
 	update_post_meta( $legacy_id, '_aditional_info_email', 'private@example.test' );
 	wp_set_object_terms( $legacy_id, array( (int) $term['term_id'] ), 'ttshowcase_groups' );
-	update_option( 'sct_import_recovery_fixture', array( 'legacy_id' => (int) $legacy_id, 'term_id' => (int) $term['term_id'] ), false );
+	update_option( 'shootcal_testimonials_import_recovery_fixture', array( 'legacy_id' => (int) $legacy_id, 'term_id' => (int) $term['term_id'] ), false );
 	echo "PASS setup\n";
 	return;
 }
@@ -75,7 +75,7 @@ if ( 'fail' === $mode ) {
 	// even if its per-relationship insert fails, so the importer must read back.
 	add_action( 'added_term_relationship', static function ( int $object_id, int $tt_id, string $taxonomy ): void {
 		global $wpdb;
-		if ( 'sct_category' === $taxonomy && 'sct_testimonial' === get_post_type( $object_id ) ) {
+		if ( 'shootcal_testimonials_category' === $taxonomy && 'shootcal_testimonial' === get_post_type( $object_id ) ) {
 			$wpdb->delete( $wpdb->term_relationships, array( 'object_id' => $object_id, 'term_taxonomy_id' => $tt_id ), array( '%d', '%d' ) );
 		}
 	}, 10, 3 );
@@ -94,20 +94,20 @@ if ( 'resume' === $mode || 'preserved' === $mode ) {
 $made = $targets( $legacy_id );
 $check( 1 === count( $made ), 'Expected exactly one imported review.' );
 $target = $made[0];
-$check( '' === get_post_meta( $target->ID, '_sct_submitter_email', true ), 'Private legacy email was copied.' );
+$check( '' === get_post_meta( $target->ID, '_shootcal_testimonials_submitter_email', true ), 'Private legacy email was copied.' );
 
 if ( 'resume' === $mode ) {
-	$check( 'complete' === get_post_meta( $target->ID, 'sct_import_state', true ), 'Recovered review did not complete.' );
+	$check( 'complete' === get_post_meta( $target->ID, 'shootcal_testimonials_import_state', true ), 'Recovered review did not complete.' );
 	echo "PASS interrupted import resumed the existing review\n";
 } elseif ( 'failed' === $mode ) {
 	$check( 'draft' === $target->post_status, 'Interrupted review became public.' );
-	$check( 'pending' === get_post_meta( $target->ID, 'sct_import_state', true ), 'Interrupted review was marked complete.' );
-	$check( array() === wp_get_object_terms( $target->ID, 'sct_category', array( 'fields' => 'ids' ) ), 'Category did not fail as intended.' );
+	$check( 'pending' === get_post_meta( $target->ID, 'shootcal_testimonials_import_state', true ), 'Interrupted review was marked complete.' );
+	$check( array() === wp_get_object_terms( $target->ID, 'shootcal_testimonials_category', array( 'fields' => 'ids' ) ), 'Category did not fail as intended.' );
 	echo "PASS interrupted review is one recoverable draft with no category\n";
 } elseif ( 'complete' === $mode ) {
 	$source_terms = wp_get_object_terms( $legacy_id, 'ttshowcase_groups', array( 'fields' => 'slugs' ) );
-	$target_terms = wp_get_object_terms( $target->ID, 'sct_category', array( 'fields' => 'slugs' ) );
-	$check( 'complete' === get_post_meta( $target->ID, 'sct_import_state', true ) &&
+	$target_terms = wp_get_object_terms( $target->ID, 'shootcal_testimonials_category', array( 'fields' => 'slugs' ) );
+	$check( 'complete' === get_post_meta( $target->ID, 'shootcal_testimonials_import_state', true ) &&
 		'publish' === $target->post_status && $source->post_date === $target->post_date &&
 		$source->post_date_gmt === $target->post_date_gmt && $source_terms === $target_terms &&
 		get_post_meta( $legacy_id, '_aditional_info_short_testimonial', true ) === $target->post_content,
@@ -124,9 +124,9 @@ if ( 'resume' === $mode ) {
 	wp_delete_post( $legacy_id, true );
 	$legacy_term = get_term( (int) $fixture['term_id'], 'ttshowcase_groups' );
 	if ( $legacy_term instanceof WP_Term ) { wp_delete_term( $legacy_term->term_id, 'ttshowcase_groups' ); }
-	$new_term = get_term_by( 'slug', 'sct-recovery-fixture', 'sct_category' );
-	if ( $new_term instanceof WP_Term ) { wp_delete_term( $new_term->term_id, 'sct_category' ); }
-	delete_option( 'sct_import_recovery_fixture' );
+	$new_term = get_term_by( 'slug', 'sct-recovery-fixture', 'shootcal_testimonials_category' );
+	if ( $new_term instanceof WP_Term ) { wp_delete_term( $new_term->term_id, 'shootcal_testimonials_category' ); }
+	delete_option( 'shootcal_testimonials_import_recovery_fixture' );
 	echo "PASS cleanup\n";
 } else {
 	throw new RuntimeException( 'Unknown phase: ' . $mode );

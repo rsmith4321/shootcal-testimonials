@@ -62,7 +62,7 @@ $manifest    = is_dir( $out_dir ) && is_readable( $out_dir . '/integrity.json' )
  * @param mixed $value Value to normalize.
  * @return mixed
  */
-function sct_stable( $value ) {
+function shootcal_testimonials_stable( $value ) {
 	if ( is_array( $value ) ) {
 		$is_list = array_keys( $value ) === range( 0, count( $value ) - 1 );
 
@@ -71,7 +71,7 @@ function sct_stable( $value ) {
 		}
 
 		foreach ( $value as $k => $v ) {
-			$value[ $k ] = sct_stable( $v );
+			$value[ $k ] = shootcal_testimonials_stable( $v );
 		}
 	}
 
@@ -83,8 +83,8 @@ function sct_stable( $value ) {
  *
  * @param mixed $value Value to hash.
  */
-function sct_hash( $value ): string {
-	return hash( 'sha256', (string) wp_json_encode( sct_stable( $value ) ) );
+function shootcal_testimonials_hash( $value ): string {
+	return hash( 'sha256', (string) wp_json_encode( shootcal_testimonials_stable( $value ) ) );
 }
 
 global $wpdb;
@@ -211,7 +211,7 @@ foreach ( array_keys( $attachment_ids ) as $attachment_id ) {
 		'post_status'   => (string) ( get_post_status( $attachment_id ) ?: '' ),
 		'post_title'    => (string) ( get_post_field( 'post_title', $attachment_id ) ?: '' ),
 		'post_mime'     => (string) ( get_post_field( 'post_mime_type', $attachment_id ) ?: '' ),
-		'meta_hash'     => sct_hash( get_post_meta( $attachment_id ) ),
+		'meta_hash'     => shootcal_testimonials_hash( get_post_meta( $attachment_id ) ),
 	);
 
 	if ( $entry['exists'] ) {
@@ -274,9 +274,9 @@ foreach ( $protected_pages as $page_id ) {
 		'permalink'      => (string) get_permalink( $page_id ),
 		/* Authored content, meta and terms. Excludes post_modified on purpose so an
 		   unrelated touch does not read as a content change. */
-		'content_sha256' => sct_hash( array( 'row' => $content_fields, 'meta' => $meta, 'terms' => $terms ) ),
+		'content_sha256' => shootcal_testimonials_hash( array( 'row' => $content_fields, 'meta' => $meta, 'terms' => $terms ) ),
 		/* Everything, including post_modified. */
-		'row_sha256'     => sct_hash( array( 'row' => $row_all, 'meta' => $meta, 'terms' => $terms ) ),
+		'row_sha256'     => shootcal_testimonials_hash( array( 'row' => $row_all, 'meta' => $meta, 'terms' => $terms ) ),
 		'post_modified'  => (string) $post->post_modified,
 	);
 }
@@ -306,13 +306,13 @@ $current = array(
 	'site_url'         => home_url(),
 	'wp_version'       => (string) $GLOBALS['wp_version'],
 	'legacy_count'     => count( $legacy_snapshot ),
-	'legacy_sha256'    => sct_hash( $legacy_snapshot ),
-	'legacy_terms_sha256' => sct_hash( $term_snapshot ),
-	'media_sha256'     => sct_hash( $media_snapshot ),
+	'legacy_sha256'    => shootcal_testimonials_hash( $legacy_snapshot ),
+	'legacy_terms_sha256' => shootcal_testimonials_hash( $term_snapshot ),
+	'media_sha256'     => shootcal_testimonials_hash( $media_snapshot ),
 	'media_count'      => count( $media_snapshot ),
-	'pages_sha256'     => sct_hash( $page_hashes ),
+	'pages_sha256'     => shootcal_testimonials_hash( $page_hashes ),
 	'pages'            => $page_hashes,
-	'plugins_sha256'   => sct_hash( $plugin_inventory ),
+	'plugins_sha256'   => shootcal_testimonials_hash( $plugin_inventory ),
 	'plugin_count'     => count( $plugin_inventory ),
 );
 

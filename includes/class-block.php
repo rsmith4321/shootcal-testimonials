@@ -52,7 +52,7 @@ class Block {
 	 * attribute out of the saved markup so the shortcode's own Config-driven default still
 	 * applies on the front end.
 	 */
-	public const EDITOR_OBJECT = 'sctBlockEditor';
+	public const EDITOR_OBJECT = 'shootcalTestimonialsBlockEditor';
 
 	/**
 	 * Block attribute name to shortcode attribute name.

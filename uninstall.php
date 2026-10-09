@@ -6,7 +6,7 @@
  * authored content and are deliberately left in place, because deleting a plugin to try
  * something else should never destroy a client review library.
  *
- * To remove the content as well, define SCT_REMOVE_CONTENT as true in wp-config.php
+ * To remove the content as well, define SHOOTCAL_TESTIMONIALS_REMOVE_CONTENT as true in wp-config.php
  * before uninstalling. That is an explicit, opt-in, destructive step.
  *
  * @package ShootCalTestimonials
@@ -17,12 +17,13 @@ declare( strict_types=1 );
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 delete_option( 'shootcal_testimonials_options' );
-delete_option( 'sct_render_cache_version' );
+delete_option( 'shootcal_testimonials_storage_version' );
+delete_option( 'shootcal_testimonials_render_cache_version' );
 
-if ( defined( 'SCT_REMOVE_CONTENT' ) && true === constant( 'SCT_REMOVE_CONTENT' ) ) {
+if ( defined( 'SHOOTCAL_TESTIMONIALS_REMOVE_CONTENT' ) && true === constant( 'SHOOTCAL_TESTIMONIALS_REMOVE_CONTENT' ) ) {
 	$posts = get_posts(
 		array(
-			'post_type'      => 'sct_testimonial',
+			'post_type'      => 'shootcal_testimonial',
 			'post_status'    => array( 'publish', 'pending', 'draft', 'private', 'future', 'trash' ),
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
@@ -35,10 +36,10 @@ if ( defined( 'SCT_REMOVE_CONTENT' ) && true === constant( 'SCT_REMOVE_CONTENT' 
 		wp_delete_post( (int) $post_id, true );
 	}
 
-	if ( ! taxonomy_exists( 'sct_category' ) ) { register_taxonomy( 'sct_category', 'sct_testimonial' ); }
+	if ( ! taxonomy_exists( 'shootcal_testimonials_category' ) ) { register_taxonomy( 'shootcal_testimonials_category', 'shootcal_testimonial' ); }
 	$terms = get_terms(
 		array(
-			'taxonomy'   => 'sct_category',
+			'taxonomy'   => 'shootcal_testimonials_category',
 			'hide_empty' => false,
 			'fields'     => 'ids',
 		)
@@ -46,7 +47,7 @@ if ( defined( 'SCT_REMOVE_CONTENT' ) && true === constant( 'SCT_REMOVE_CONTENT' 
 
 	if ( ! is_wp_error( $terms ) ) {
 		foreach ( $terms as $term_id ) {
-			wp_delete_term( (int) $term_id, 'sct_category' );
+			wp_delete_term( (int) $term_id, 'shootcal_testimonials_category' );
 		}
 	}
 }

@@ -20,14 +20,14 @@ class Category_Icons {
 	}
 
 	private function controls( int $id ): void {
-		wp_nonce_field( 'sct_category_icon', 'sct_category_icon_nonce' );
-		$selected = (string) get_term_meta( $id, 'sct_icon', true );
-		echo '<label for="sct_icon">' . esc_html__( 'Category icon', 'shootcal-testimonials' ) . '</label><br><select id="sct_icon" name="sct_icon">';
+		wp_nonce_field( 'shootcal_testimonials_category_icon', 'shootcal_testimonials_category_icon_nonce' );
+		$selected = (string) get_term_meta( $id, 'shootcal_testimonials_icon', true );
+		echo '<label for="shootcal_testimonials_icon">' . esc_html__( 'Category icon', 'shootcal-testimonials' ) . '</label><br><select id="shootcal_testimonials_icon" name="shootcal_testimonials_icon">';
 		foreach ( self::presets() as $key => $label ) {
 			echo '<option value="' . esc_attr( $key ) . '"' . selected( $selected, $key, false ) . '>' . esc_html( $label ) . '</option>';
 		}
-		echo '</select><p class="description">' . esc_html__( 'Shown beside the category beneath the reviewer’s name. The built-in icons are from Font Awesome Free.', 'shootcal-testimonials' ) . '</p><label for="sct_icon_svg">' . esc_html__( 'Custom SVG code', 'shootcal-testimonials' ) . '</label><br><textarea id="sct_icon_svg" name="sct_icon_svg" rows="5" class="large-text code" maxlength="12000">' . esc_textarea( (string) get_term_meta( $id, 'sct_icon_svg', true ) ) . '</textarea><p class="description">' . esc_html__( 'Choose Custom SVG above and paste the code for a simple icon. Scripts, links and embedded content are not supported. Leave this blank to use no custom icon.', 'shootcal-testimonials' ) . '</p>';
-		if ( get_term_meta( $id, 'sct_icon_invalid', true ) ) {
+		echo '</select><p class="description">' . esc_html__( 'Shown beside the category beneath the reviewer’s name. The built-in icons are from Font Awesome Free.', 'shootcal-testimonials' ) . '</p><label for="shootcal_testimonials_icon_svg">' . esc_html__( 'Custom SVG code', 'shootcal-testimonials' ) . '</label><br><textarea id="shootcal_testimonials_icon_svg" name="shootcal_testimonials_icon_svg" rows="5" class="large-text code" maxlength="12000">' . esc_textarea( (string) get_term_meta( $id, 'shootcal_testimonials_icon_svg', true ) ) . '</textarea><p class="description">' . esc_html__( 'Choose Custom SVG above and paste the code for a simple icon. Scripts, links and embedded content are not supported. Leave this blank to use no custom icon.', 'shootcal-testimonials' ) . '</p>';
+		if ( get_term_meta( $id, 'shootcal_testimonials_icon_invalid', true ) ) {
 			echo '<p class="description">' . esc_html__( 'The last icon could not be saved. Paste a simple SVG made of shapes and paths; your previous icon was kept.', 'shootcal-testimonials' ) . '</p>';
 		}
 	}
@@ -45,20 +45,20 @@ class Category_Icons {
 	}
 
 	public function save( int $id ): void {
-		$nonce = $_POST['sct_category_icon_nonce'] ?? null;
-		if ( ! current_user_can( 'edit_term', $id ) || ! is_string( $nonce ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $nonce ) ), 'sct_category_icon' ) ) { return; }
-		if ( ! isset( $_POST['sct_icon'], $_POST['sct_icon_svg'] ) || ! is_string( $_POST['sct_icon'] ) || ! is_string( $_POST['sct_icon_svg'] ) ) { return; }
-		$preset = sanitize_key( wp_unslash( $_POST['sct_icon'] ) );
+		$nonce = $_POST['shootcal_testimonials_category_icon_nonce'] ?? null;
+		if ( ! current_user_can( 'edit_term', $id ) || ! is_string( $nonce ) || ! wp_verify_nonce( sanitize_key( wp_unslash( $nonce ) ), 'shootcal_testimonials_category_icon' ) ) { return; }
+		if ( ! isset( $_POST['shootcal_testimonials_icon'], $_POST['shootcal_testimonials_icon_svg'] ) || ! is_string( $_POST['shootcal_testimonials_icon'] ) || ! is_string( $_POST['shootcal_testimonials_icon_svg'] ) ) { return; }
+		$preset = sanitize_key( wp_unslash( $_POST['shootcal_testimonials_icon'] ) );
 		if ( ! array_key_exists( $preset, self::presets() ) ) { return; }
-		$raw = trim( wp_unslash( $_POST['sct_icon_svg'] ) );
+		$raw = trim( wp_unslash( $_POST['shootcal_testimonials_icon_svg'] ) );
 		$svg = self::sanitize_svg( $raw );
 		if ( 'custom' === $preset && '' !== $raw && '' === $svg ) {
-			update_term_meta( $id, 'sct_icon_invalid', '1' );
+			update_term_meta( $id, 'shootcal_testimonials_icon_invalid', '1' );
 			return;
 		}
-		update_term_meta( $id, 'sct_icon', $preset );
-		update_term_meta( $id, 'sct_icon_svg', wp_slash( $svg ) );
-		delete_term_meta( $id, 'sct_icon_invalid' );
+		update_term_meta( $id, 'shootcal_testimonials_icon', $preset );
+		update_term_meta( $id, 'shootcal_testimonials_icon_svg', wp_slash( $svg ) );
+		delete_term_meta( $id, 'shootcal_testimonials_icon_invalid' );
 	}
 
 	/** Accept static shapes only; no entity expansion, scripting, CSS or external resources. */
@@ -107,8 +107,8 @@ class Category_Icons {
 
 	public static function icon( int $id ): string {
 		static $icons_by_term = array();
-		$preset = (string) get_term_meta( $id, 'sct_icon', true );
-		$raw = 'custom' === $preset ? (string) get_term_meta( $id, 'sct_icon_svg', true ) : '';
+		$preset = (string) get_term_meta( $id, 'shootcal_testimonials_icon', true );
+		$raw = 'custom' === $preset ? (string) get_term_meta( $id, 'shootcal_testimonials_icon_svg', true ) : '';
 		$identity = $preset . "\0" . $raw;
 		if ( isset( $icons_by_term[ $id ] ) && $identity === $icons_by_term[ $id ]['identity'] ) { return $icons_by_term[ $id ]['html']; }
 		if ( 'custom' === $preset ) {

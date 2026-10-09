@@ -4,7 +4,7 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.7.2
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,7 +22,7 @@ Source attribution helps readers verify where a review appeared. It does not est
 
 **Native storage**
 
-* Post type `sct_testimonial` and a hierarchical `sct_category` taxonomy.
+* Post type `shootcal_testimonial` and a hierarchical `shootcal_testimonials_category` taxonomy.
 * Registered meta for rating, review title, source platform, source URL, provider review id, reviewer profile URL, date provenance, consent, alternates, and source lookup state.
 * Reviewer email addresses are not registered as meta. Private consent and research annotations are available only to authorized editors in REST edit context; anonymous responses omit them.
 
@@ -54,7 +54,7 @@ A shortcode:
 
 `[shootcal_testimonials category="weddings" count="9" columns="3" more="show" orderby="rating" heading="Kind words"]`
 
-Or the bundled Gutenberg block, which is dynamic and renders through exactly the same code path, so the two can never drift apart. The block's editor preview is the real PHP output, and its category control lists your actual `sct_category` terms as checkboxes.
+Or the bundled Gutenberg block, which is dynamic and renders through exactly the same code path, so the two can never drift apart. The block's editor preview is the real PHP output, and its category control lists your actual `shootcal_testimonials_category` terms as checkboxes.
 
 **Public submissions**
 
@@ -103,15 +103,15 @@ It first reveals at least nine reviews already in the page HTML, rounded to full
 
 = Where do public form submissions go? =
 
-They are created with a `pending` post status, so they sit in Testimonials until an editor publishes them. Each one is recorded with `sct_source` set to `direct`, `sct_source_lookup` set to `not-found`, and a source note explaining that there is no third-party platform record to reconcile against. Nothing is published automatically and no notification is sent by the plugin; use the `sct_form_submitted` action if you want to wire up your own.
+They are created with a `pending` post status, so they sit in Testimonials until an editor publishes them. Each one is recorded with `shootcal_testimonials_source` set to `direct`, `shootcal_testimonials_source_lookup` set to `not-found`, and a source note explaining that there is no third-party platform record to reconcile against. Nothing is published automatically and no notification is sent by the plugin; use the `shootcal_testimonials_form_submitted` action if you want to wire up your own.
 
 = Is a submitter's email address exposed through the REST API? =
 
-No. It is written to `_sct_submitter_email`, which is never passed to `register_post_meta()`. Because the key is unregistered it is not part of the REST meta surface at all, so no headless or mobile consumer can read it back. Site editors can still see it in the custom fields panel. The email is optional and is never echoed back into the form, even after a validation error.
+No. It is written to `_shootcal_testimonials_submitter_email`, which is never passed to `register_post_meta()`. Because the key is unregistered it is not part of the REST meta surface at all, so no headless or mobile consumer can read it back. Site editors can still see it in the custom fields panel. The email is optional and is never echoed back into the form, even after a validation error.
 
 = How do I show different categories on two URLs from one page? =
 
-Add `allow_query="on"` to the shortcode, or switch on "Allow a URL parameter to override these categories" in the block. A `?sct_category=slug` parameter then replaces the configured categories. The selector's `?sct_category=` link shows all reviews; an unknown slug falls back to the configured filter. A page using this must not be served from a page cache keyed on the path alone, or every visitor sees whichever variant was cached first.
+Add `allow_query="on"` to the shortcode, or switch on "Allow a URL parameter to override these categories" in the block. A `?shootcal_testimonials_category=slug` parameter then replaces the configured categories. The selector's `?shootcal_testimonials_category=` link shows all reviews; an unknown slug falls back to the configured filter. A page using this must not be served from a page cache keyed on the path alone, or every visitor sees whichever variant was cached first.
 
 = Does the block need a build step? =
 
@@ -119,7 +119,7 @@ No. There is no package.json, no bundler and no compiled asset. The editor scrip
 
 = What happens to my testimonials if I uninstall? =
 
-Nothing. Uninstalling removes the plugin's options only. Testimonials, their photos and their category terms are authored content and are left in place, because deleting a plugin to try something else should never destroy a client review library. Removing the content as well is an explicit opt-in step: define `SCT_REMOVE_CONTENT` as true in `wp-config.php` before uninstalling.
+Nothing. Uninstalling removes the plugin's options only. Testimonials, their photos and their category terms are authored content and are left in place, because deleting a plugin to try something else should never destroy a client review library. Removing the content as well is an explicit opt-in step: define `SHOOTCAL_TESTIMONIALS_REMOVE_CONTENT` as true in `wp-config.php` before uninstalling.
 
 = Is the Google mark the official asset? =
 
@@ -135,7 +135,10 @@ Sixty per server-rendered page. New installations show 21 initially; with View m
 
 == Changelog ==
 
-= 0.7.2 =
+= 0.8.0 =
+* Use distinctive ShootCal identifiers, with an automatic, transactional upgrade that preserves review IDs, quotes, metadata, photos and category relationships.
+* Emit importer provenance in the CLI JSON result without writing a sidecar file.
+* Rename frontend/editor globals and public hooks to avoid collisions. Older category and pagination links remain supported.
 * Refresh the pages displaying testimonials once after a plugin update so cached markup and styles do not linger.
 
 = 0.7.1 =
@@ -200,7 +203,7 @@ Sixty per server-rendered page. New installations show 21 initially; with View m
 = 0.3.0 =
 
 * New: `mode="dialog"` on `[shootcal_testimonial_form]`. The shortcode renders a button that opens the same form in a native modal dialog, reusing the review dialog's chrome, close button and backdrop handling. `button_label` sets the button text.
-* New: the dialog trigger is a real link to `?sct_form_open=1`, the no-script rendering of the form in place, and validation failures or a waiting confirmation also render in place, so the modal can never hide content a submitter needs to read.
+* New: the dialog trigger is a real link to `?shootcal_testimonials_form_open=1`, the no-script rendering of the form in place, and validation failures or a waiting confirmation also render in place, so the modal can never hide content a submitter needs to read.
 * Change: pages rendering a dialog-mode form now load the front-end script even when no testimonial list is present; previously only lists with View more requested it.
 
 = 0.2.1 =
@@ -210,11 +213,11 @@ Sixty per server-rendered page. New installations show 21 initially; with View m
 = 0.2.0 =
 
 * New: Gutenberg block `shootcal/testimonials`. Dynamic, no build step, rendering through the same code path as the shortcode so the two cannot drift apart. The editor preview is the real PHP output via server-side render.
-* New: block category filter control that lists actual `sct_category` terms from the core data store as checkboxes and stores the selection as one comma-separated slug string.
+* New: block category filter control that lists actual `shootcal_testimonials_category` terms from the core data store as checkboxes and stores the selection as one comma-separated slug string.
 * New: `[shootcal_testimonial_form]`, an accessible public submission form that creates a pending testimonial. Nonce, honeypot, per-IP cooldown, server-side sanitization, length caps, and an error summary linked to each offending field. Works without JavaScript.
-* New: submitter email stored only in the unregistered `_sct_submitter_email` key, so it is unreachable through the REST API.
-* New: `allow_query` shortcode attribute and matching block toggle, letting a `?sct_category=` parameter override the configured category filter so one page can serve two filtered URLs. Narrowing only, and it never widens the query beyond published testimonials.
-* New: `sct_source_lookup` and `sct_source_note` registered meta. The lookup accepts exactly `matched`, `not-found` or `blocked`; an empty value means "not yet researched" and is never coerced into a plausible answer.
+* New: submitter email stored only in the unregistered `_shootcal_testimonials_submitter_email` key, so it is unreachable through the REST API.
+* New: `allow_query` shortcode attribute and matching block toggle, letting a `?shootcal_testimonials_category=` parameter override the configured category filter so one page can serve two filtered URLs. Narrowing only, and it never widens the query beyond published testimonials.
+* New: `shootcal_testimonials_source_lookup` and `shootcal_testimonials_source_note` registered meta. The lookup accepts exactly `matched`, `not-found` or `blocked`; an empty value means "not yet researched" and is never coerced into a plausible answer.
 * New: `bin/import-testimonials-showcase.php`, an idempotent WP-CLI importer from Testimonials Showcase that leaves every legacy record untouched.
 * New: WordPress.org packaging, `readme.txt`, the GPL-2.0 `LICENSE`, and `bin/build-zip.sh`.
 * Fix: the quote renderer no longer collapses paragraph breaks. `wp_strip_all_tags()` was being called with `$remove_breaks` set, which flattened every newline before the card's `white-space: pre-line` could use it.

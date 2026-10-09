@@ -3,7 +3,7 @@
  * Read-only audit of the legacy Testimonials Showcase (ttshowcase) data.
  *
  * Writes nothing. Its purpose is to establish, from evidence already stored on the site,
- * which platform each legacy review came from, so that sct_source and sct_source_lookup
+ * which platform each legacy review came from, so that shootcal_testimonials_source and shootcal_testimonials_source_lookup
  * can be filled from receipts rather than guessed.
  *
  * Run with WP-CLI. The single positional argument is the JSON report path:

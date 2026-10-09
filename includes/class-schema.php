@@ -44,7 +44,7 @@ class Schema {
 	 * Hook registration.
 	 */
 	public function register(): void {
-		add_action( 'sct_rendered', array( $this, 'collect' ), 10, 1 );
+		add_action( 'shootcal_testimonials_rendered', array( $this, 'collect' ), 10, 1 );
 		add_action( 'wp_footer', array( $this, 'output' ) );
 	}
 

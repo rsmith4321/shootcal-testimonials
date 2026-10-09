@@ -32,7 +32,7 @@ $report = array();
  * @param string               $path Destination file.
  * @param array{0:int[],1:int[]} $palette Top and bottom RGB triplets.
  */
-function sct_make_photo( string $path, array $palette ): bool {
+function shootcal_testimonials_make_photo( string $path, array $palette ): bool {
 	$w   = 900;
 	$h   = 675;
 	$img = imagecreatetruecolor( $w, $h );
@@ -84,9 +84,9 @@ function sct_make_photo( string $path, array $palette ): bool {
 // Clear any previous seed so reruns stay predictable.
 $previous = get_posts(
 	array(
-		'post_type'      => 'sct_testimonial',
+		'post_type'      => 'shootcal_testimonial',
 		'post_status'    => array( 'publish', 'pending', 'draft', 'private', 'trash' ),
-		'meta_key'       => '_sct_qa_seed',
+		'meta_key'       => '_shootcal_testimonials_qa_seed',
 		'meta_value'     => '1',
 		'posts_per_page' => -1,
 		'fields'         => 'ids',
@@ -108,8 +108,8 @@ $categories = array(
 );
 
 foreach ( $categories as $slug => $label ) {
-	if ( ! term_exists( $slug, 'sct_category' ) ) {
-		wp_insert_term( $label, 'sct_category', array( 'slug' => $slug ) );
+	if ( ! term_exists( $slug, 'shootcal_testimonials_category' ) ) {
+		wp_insert_term( $label, 'shootcal_testimonials_category', array( 'slug' => $slug ) );
 	}
 }
 
@@ -133,7 +133,7 @@ $palettes = array(
 foreach ( $palettes as $index => $palette ) {
 	$file = $seed_dir . '/sample-' . ( $index + 1 ) . '.jpg';
 
-	if ( ! sct_make_photo( $file, $palette ) ) {
+	if ( ! shootcal_testimonials_make_photo( $file, $palette ) ) {
 		continue;
 	}
 
@@ -298,7 +298,7 @@ $created = array();
 foreach ( $samples as $sample ) {
 	$post_id = wp_insert_post(
 		array(
-			'post_type'    => 'sct_testimonial',
+			'post_type'    => 'shootcal_testimonial',
 			'post_title'   => $sample['name'],
 			'post_content' => $sample['quote'],
 			'post_status'  => 'publish',
@@ -311,7 +311,7 @@ foreach ( $samples as $sample ) {
 		continue;
 	}
 
-	update_post_meta( $post_id, '_sct_qa_seed', '1' );
+	update_post_meta( $post_id, '_shootcal_testimonials_qa_seed', '1' );
 	// WordPress replaces post_date when publishing a backdated draft, so restate it.
 	wp_update_post(
 		array(
@@ -322,16 +322,16 @@ foreach ( $samples as $sample ) {
 		)
 	);
 
-	update_post_meta( $post_id, 'sct_rating', $sample['rating'] );
-	update_post_meta( $post_id, 'sct_source', $sample['source'] );
-	update_post_meta( $post_id, 'sct_source_url', $sample['url'] );
-	update_post_meta( $post_id, 'sct_consent_recorded', '2026-10-01' );
+	update_post_meta( $post_id, 'shootcal_testimonials_rating', $sample['rating'] );
+	update_post_meta( $post_id, 'shootcal_testimonials_source', $sample['source'] );
+	update_post_meta( $post_id, 'shootcal_testimonials_source_url', $sample['url'] );
+	update_post_meta( $post_id, 'shootcal_testimonials_consent_recorded', '2026-10-01' );
 
 	if ( '' !== $sample['reason'] ) {
-		update_post_meta( $post_id, 'sct_selection_reason', $sample['reason'] );
+		update_post_meta( $post_id, 'shootcal_testimonials_selection_reason', $sample['reason'] );
 		update_post_meta(
 			$post_id,
-			'sct_alternates',
+			'shootcal_testimonials_alternates',
 			wp_json_encode(
 				array(
 					array(
@@ -349,7 +349,7 @@ foreach ( $samples as $sample ) {
 		set_post_thumbnail( $post_id, $photo_ids[ $sample['photo'] ] );
 	}
 
-	wp_set_object_terms( $post_id, $sample['cat'], 'sct_category' );
+	wp_set_object_terms( $post_id, $sample['cat'], 'shootcal_testimonials_category' );
 
 	$created[] = $post_id;
 }
@@ -360,7 +360,7 @@ $report['ids']          = $created;
 // The QA page.
 $existing_page = get_page_by_path( 'testimonial-qa' );
 
-if ( $existing_page instanceof WP_Post && '1' !== get_post_meta( $existing_page->ID, '_sct_qa_seed', true ) ) {
+if ( $existing_page instanceof WP_Post && '1' !== get_post_meta( $existing_page->ID, '_shootcal_testimonials_qa_seed', true ) ) {
 	throw new RuntimeException( 'Refusing to replace an authored testimonial-qa page.' );
 }
 if ( $existing_page instanceof WP_Post ) {
@@ -378,7 +378,7 @@ $page_id = wp_insert_post(
 	true
 );
 
-if ( ! is_wp_error( $page_id ) ) { update_post_meta( $page_id, '_sct_qa_seed', '1' ); }
+if ( ! is_wp_error( $page_id ) ) { update_post_meta( $page_id, '_shootcal_testimonials_qa_seed', '1' ); }
 
 $report['page_id']  = is_wp_error( $page_id ) ? $page_id->get_error_message() : $page_id;
 $report['page_url'] = is_wp_error( $page_id ) ? '' : get_permalink( $page_id );

@@ -211,7 +211,7 @@ class Compatibility {
 	 * @param \WP_Post $post       The testimonial being transitioned.
 	 */
 	public function purge_rendering_pages( $new_status, $old_status, $post ): void {
-		if ( ! $post instanceof \WP_Post || 'sct_testimonial' !== $post->post_type ) {
+		if ( ! $post instanceof \WP_Post || 'shootcal_testimonial' !== $post->post_type ) {
 			return;
 		}
 
@@ -225,7 +225,7 @@ class Compatibility {
 	private bool $version_pending = false;
 	/** Refresh rendered pages once after installation or a plugin update. */
 	public function check_render_version(): void {
-		if ( VERSION !== get_option( 'sct_render_cache_version', '' ) ) {
+		if ( VERSION !== get_option( 'shootcal_testimonials_render_cache_version', '' ) ) {
 			$this->version_pending = true;
 			$this->schedule_purge();
 		}
@@ -235,7 +235,7 @@ class Compatibility {
 		if ( POST_TYPE === get_post_type( $post_id ) && 'publish' === get_post_status( $post_id ) && ( 0 === strpos( (string) $key, META_PREFIX ) || '_thumbnail_id' === $key ) ) { $this->schedule_purge(); }
 	}
 	public function term_icon_changed( $meta_id, $term_id, $key, $value ): void {
-		if ( ! in_array( $key, array( 'sct_icon', 'sct_icon_svg' ), true ) ) { return; }
+		if ( ! in_array( $key, array( 'shootcal_testimonials_icon', 'shootcal_testimonials_icon_svg' ), true ) ) { return; }
 		$term = get_term( (int) $term_id );
 		if ( $term instanceof \WP_Term && TAXONOMY === $term->taxonomy ) { $this->schedule_purge(); }
 	}
@@ -262,7 +262,7 @@ class Compatibility {
 			self::clear_used_css( $id );
 		}
 		if ( $this->version_pending ) {
-			update_option( 'sct_render_cache_version', VERSION, false );
+			update_option( 'shootcal_testimonials_render_cache_version', VERSION, false );
 			$this->version_pending = false;
 		}
 	}

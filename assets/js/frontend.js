@@ -107,7 +107,7 @@
 	/** Load the locally bundled PhotoSwipe core only when a review is opened. */
 	function photoSwipe() {
 		if ( ! photoSwipeModule ) {
-			photoSwipeModule = import( ( window.sctFrontend || {} ).photoSwipeUrl ).then( function ( module ) {
+			photoSwipeModule = import( ( window.shootcalTestimonialsFrontend || {} ).photoSwipeUrl ).then( function ( module ) {
 				return module.default;
 			} );
 		}
@@ -143,10 +143,10 @@
 		var wrapper = document.createElement( 'div' );
 		wrapper.className = 'sct-review-continue';
 		var title = document.createElement( 'h2' );
-		title.textContent = ( window.sctFrontend || {} ).moreReviews || 'More reviews are available';
+		title.textContent = ( window.shootcalTestimonialsFrontend || {} ).moreReviews || 'More reviews are available';
 		var link = document.createElement( 'a' );
 		link.href = next.href;
-		link.textContent = ( window.sctFrontend || {} ).continueReviews || 'Continue to the next reviews';
+		link.textContent = ( window.shootcalTestimonialsFrontend || {} ).continueReviews || 'Continue to the next reviews';
 		wrapper.appendChild( title );
 		wrapper.appendChild( link );
 		return { html: wrapper.outerHTML };
@@ -283,7 +283,7 @@
 			var loaded = section.querySelectorAll( '[data-sct-card]' ).length;
 			var total = Number( section.getAttribute( 'data-sct-total' ) ) || loaded;
 			var shown = loaded - remaining;
-			var messages = window.sctFrontend || {};
+			var messages = window.shootcalTestimonialsFrontend || {};
 			var template = shown === 1 ? messages.shownSingular : messages.shownPlural;
 			live.textContent = ( template || '%shown% of %total% testimonials shown' )
 				.replace( '%shown%', shown ).replace( '%total%', total );
@@ -311,7 +311,7 @@
 			if ( ! next || loading ) { return Promise.resolve( false ); }
 			loading = true;
 			button.disabled = true;
-			live.textContent = ( window.sctFrontend || {} ).loadingReviews || 'Loading more reviews…';
+			live.textContent = ( window.shootcalTestimonialsFrontend || {} ).loadingReviews || 'Loading more reviews…';
 			return fetch( next.href, { credentials: 'omit', headers: { Accept: 'text/html' } } ).then( function ( response ) {
 				if ( ! response.ok ) { throw new Error( 'Review page unavailable' ); }
 				return response.text();
@@ -344,7 +344,7 @@
 				return added > 0;
 			} ).catch( function () {
 				failed = true;
-				live.textContent = ( window.sctFrontend || {} ).loadFailed || 'More reviews could not be loaded. Use Next reviews to continue.';
+				live.textContent = ( window.shootcalTestimonialsFrontend || {} ).loadFailed || 'More reviews could not be loaded. Use Next reviews to continue.';
 				return false;
 			} ).finally( function () { loading = false; button.disabled = false; } );
 		}

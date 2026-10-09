@@ -10,12 +10,12 @@ Read `../shootcal-instagram-feed/AGENTS.md` for the parity discipline this plugi
 
 Testimonials are native WordPress content, not a bespoke table:
 
-- Post type `sct_testimonial`. Quote in `post_content`, reviewer display name in
+- Post type `shootcal_testimonial`. Quote in `post_content`, reviewer display name in
   `post_title`, review date in `post_date`, photo as the featured image.
-- Taxonomy `sct_category`, hierarchical, REST-exposed.
-- Meta registered with `show_in_rest`: `sct_rating`, `sct_review_title`, `sct_source`,
-  `sct_source_url`, `sct_source_review_id`, `sct_reviewer_profile_url`,
-  `sct_date_provenance`, `sct_consent_recorded`, `sct_consent_note`.
+- Taxonomy `shootcal_testimonials_category`, hierarchical, REST-exposed.
+- Meta registered with `show_in_rest`: `shootcal_testimonials_rating`, `shootcal_testimonials_review_title`, `shootcal_testimonials_source`,
+  `shootcal_testimonials_source_url`, `shootcal_testimonials_source_review_id`, `shootcal_testimonials_reviewer_profile_url`,
+  `shootcal_testimonials_date_provenance`, `shootcal_testimonials_consent_recorded`, `shootcal_testimonials_consent_note`.
 
 The legacy plugin does it differently: it stores the display quote in
 `_aditional_info_short_testimonial` (one d, intentional typo) and leaves `post_content`

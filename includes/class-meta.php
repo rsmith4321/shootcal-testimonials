@@ -8,7 +8,7 @@
  * registered at all, so they cannot leak through the API even by accident.
  *
  * The public submission form follows the same rule: it writes the submitter's email to
- * `_sct_submitter_email`, a leading-underscore key that appears nowhere in fields() and
+ * `_shootcal_testimonials_submitter_email`, a leading-underscore key that appears nowhere in fields() and
  * is therefore unreachable through the REST API. Do not register it.
  *
  * @package ShootCalTestimonials
@@ -165,7 +165,7 @@ class Meta {
 			 *
 			 * Recording that a testimonial exists on a platform is not the same as
 			 * recording that it was checked. These two keys keep the difference visible:
-			 * `sct_source_lookup` holds one of Meta::LOOKUPS, and `sct_source_note` holds
+			 * `shootcal_testimonials_source_lookup` holds one of Meta::LOOKUPS, and `shootcal_testimonials_source_note` holds
 			 * the human reason for that value, for example "WeddingWire returns HTTP 403
 			 * to anonymous requests". An empty lookup means nobody has researched it yet,
 			 * which is a real state and is never filled in by a guess.
@@ -228,7 +228,7 @@ class Meta {
 			 * recoverable instead of leaving it as tribal knowledge, and stops Google
 			 * being treated as the default source when a longer review exists elsewhere.
 			 *
-			 * `sct_alternates` is a JSON string of objects shaped
+			 * `shootcal_testimonials_alternates` is a JSON string of objects shaped
 			 * {platform, url, date, note}. It is stored as a string rather than an array
 			 * so the REST surface stays a single scalar and no serialization ambiguity is
 			 * introduced for headless consumers.
@@ -253,7 +253,7 @@ class Meta {
 		foreach ( $fields as $key => &$args ) {
 			$args['auth_callback'] = static fn( $allowed, $meta_key, $post_id ): bool => current_user_can( 'edit_post', (int) $post_id );
 			$args['sanitize_callback'] = static fn( $value ) => self::sanitize_field( $key, $value );
-			if ( in_array( $key, array( 'sct_consent_note', 'sct_consent_recorded', 'sct_source_note', 'sct_alternates', 'sct_selection_reason', 'sct_date_provenance' ), true ) ) {
+			if ( in_array( $key, array( 'shootcal_testimonials_consent_note', 'shootcal_testimonials_consent_recorded', 'shootcal_testimonials_source_note', 'shootcal_testimonials_alternates', 'shootcal_testimonials_selection_reason', 'shootcal_testimonials_date_provenance' ), true ) ) {
 				$args['show_in_rest'] = array( 'schema' => array( 'type' => 'string', 'context' => array( 'edit' ) ) );
 			}
 		}
@@ -265,10 +265,10 @@ class Meta {
 	/** Sanitize editor and REST writes consistently without modifying quote text. */
 	public static function sanitize_field( string $key, $value ) {
 		if ( ! is_scalar( $value ) ) { return ''; }
-		if ( 'sct_rating' === $key ) { return self::normalize_rating( $value ); }
-		if ( 'sct_source' === $key ) { return self::normalize_source( $value ); }
-		if ( 'sct_source_lookup' === $key ) { return self::normalize_lookup( $value ); }
-		if ( in_array( $key, array( 'sct_source_url', 'sct_reviewer_profile_url' ), true ) ) { return esc_url_raw( (string) $value, array( 'http', 'https' ) ); }
+		if ( 'shootcal_testimonials_rating' === $key ) { return self::normalize_rating( $value ); }
+		if ( 'shootcal_testimonials_source' === $key ) { return self::normalize_source( $value ); }
+		if ( 'shootcal_testimonials_source_lookup' === $key ) { return self::normalize_lookup( $value ); }
+		if ( in_array( $key, array( 'shootcal_testimonials_source_url', 'shootcal_testimonials_reviewer_profile_url' ), true ) ) { return esc_url_raw( (string) $value, array( 'http', 'https' ) ); }
 		return sanitize_textarea_field( (string) $value );
 	}
 

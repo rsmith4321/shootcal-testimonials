@@ -36,7 +36,7 @@ class Assets {
 	public function register(): void {
 		add_action( 'template_redirect', array( $this, 'protect_form_cache' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_known_content' ) );
-		add_action( 'sct_rendered', array( $this, 'note_usage' ), 10, 2 );
+		add_action( 'shootcal_testimonials_rendered', array( $this, 'note_usage' ), 10, 2 );
 		add_action( 'wp_footer', array( $this, 'enqueue' ), 1 );
 	}
 
@@ -113,7 +113,7 @@ class Assets {
 			);
 			wp_localize_script(
 				SLUG,
-				'sctFrontend',
+				'shootcalTestimonialsFrontend',
 				array(
 					/* translators: %shown% is the visible review count; %total% is the total rendered count. */
 					'shownSingular' => __( '%shown% of %total% testimonial shown', 'shootcal-testimonials' ),

@@ -56,7 +56,7 @@ class Shortcode {
 	 *
 	 * Only read when a shortcode instance opts in with allow_query="on".
 	 */
-	public const QUERY_VAR = 'sct_category';
+	public const QUERY_VAR = 'shootcal_testimonials_category';
 
 	/**
 	 * Ceiling on slugs accepted from the query string.
@@ -197,7 +197,7 @@ class Shortcode {
 		// do_action() has a PHP 4 compatibility branch that unwraps an array
 		// containing exactly one object. Keep the post list intact for Assets and
 		// Schema when this section renders a single testimonial.
-		do_action_ref_array( 'sct_rendered', array( $rendered_posts, '' !== $button ) );
+		do_action_ref_array( 'shootcal_testimonials_rendered', array( $rendered_posts, '' !== $button ) );
 
 		return sprintf(
 			'<section id="%8$s" class="sct-section sct-testimonials" style="--sct-lines:%1$d" data-sct-columns="%2$d" data-sct-initial="%3$d" data-sct-total="%9$d">%4$s<div class="sct-testimonials__grid sct-testimonials__grid--%2$d">%5$s</div>%6$s%10$s%7$s</section>',
@@ -226,7 +226,7 @@ class Shortcode {
 		$label_id = $instance . '-category-label';
 		$out = '<div class="sct-filter"><span id="' . esc_attr( $label_id ) . '">' . esc_html__( 'Review category', 'shootcal-testimonials' ) . '</span><details class="sct-filter__dropdown"><summary aria-describedby="' . esc_attr( $label_id ) . '">' . esc_html( $selected ) . '</summary><nav class="sct-filter__options" aria-label="' . esc_attr__( 'Review categories', 'shootcal-testimonials' ) . '">';
 		foreach ( $choices as $slug => $name ) {
-			$href = remove_query_arg( 'sct_review_page', add_query_arg( self::QUERY_VAR, $slug, $url ) ) . '#' . $instance;
+			$href = remove_query_arg( 'shootcal_testimonials_review_page', add_query_arg( self::QUERY_VAR, $slug, $url ) ) . '#' . $instance;
 			$out .= '<a href="' . esc_url( $href ) . '"' . ( $category === $slug ? ' aria-current="page"' : '' ) . '>' . esc_html( $name ) . '</a>';
 		}
 		return $out . '</nav></details></div>';
@@ -235,7 +235,7 @@ class Shortcode {
 	/**
 	 * Resolve the category filter for this instance.
 	 *
-	 * With allow_query="on" a `sct_category` query-string parameter replaces the category
+	 * With allow_query="on" a `shootcal_testimonials_category` query-string parameter replaces the category
 	 * attribute, which lets one page serve two URLs with different filters without a
 	 * second shortcode or a second page.
 	 *
@@ -352,9 +352,9 @@ class Shortcode {
 	/** Page navigation is bounded to prevent an untrusted huge SQL offset. */
 	private function review_page(): int {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only public pagination.
-		if ( ! isset( $_GET['sct_review_page'] ) || ! is_string( $_GET['sct_review_page'] ) ) { return 1; }
+		if ( ! isset( $_GET['shootcal_testimonials_review_page'] ) || ! is_string( $_GET['shootcal_testimonials_review_page'] ) ) { return 1; }
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only public pagination.
-		$raw = sanitize_text_field( wp_unslash( $_GET['sct_review_page'] ) );
+		$raw = sanitize_text_field( wp_unslash( $_GET['shootcal_testimonials_review_page'] ) );
 		return ctype_digit( $raw ) ? max( 1, min( 100, (int) $raw ) ) : 1;
 	}
 
@@ -362,7 +362,7 @@ class Shortcode {
 	private function page_url( int $page, string $category, string $instance ): string {
 		$url = get_permalink( get_queried_object_id() );
 		if ( ! is_string( $url ) || '' === $url ) { return ''; }
-		$args = array( 'sct_review_page' => $page );
+		$args = array( 'shootcal_testimonials_review_page' => $page );
 		if ( '' !== $category ) { $args[ self::QUERY_VAR ] = $category; }
 		return add_query_arg( $args, $url ) . '#' . rawurlencode( $instance );
 	}

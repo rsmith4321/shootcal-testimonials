@@ -13,7 +13,7 @@
  * below is the real PHP output, fetched through wp.serverSideRender, which means what an
  * editor sees is exactly what a visitor gets.
  *
- * The category control is the point of this block. It lists the real sct_category terms
+ * The category control is the point of this block. It lists the real shootcal_testimonials_category terms
  * from the core data store and stores the selection as one comma-separated slug string in
  * the category attribute, which is the same shape the shortcode has always accepted.
  *
@@ -49,9 +49,9 @@
 	var Fragment          = wp.element.Fragment;
 
 	var BLOCK_NAME = 'shootcal/testimonials';
-	var TAXONOMY   = 'sct_category';
+	var TAXONOMY   = 'shootcal_testimonials_category';
 
-	var config       = window.sctBlockEditor || {};
+	var config       = window.shootcalTestimonialsBlockEditor || {};
 	var siteDefaults = config.defaults || {};
 
 	var CEILING     = config.ceiling || 60;
@@ -140,7 +140,7 @@
 	}
 
 	/**
-	 * Read the real sct_category terms and whether they are still loading.
+	 * Read the real shootcal_testimonials_category terms and whether they are still loading.
 	 *
 	 * per_page of -1 is core-data's "give me everything" signal: it pages through the
 	 * collection in requests of 100 itself rather than sending -1 to the REST API, which
@@ -306,7 +306,7 @@
 					createElement( ToggleControl, { label: __( 'Show a visitor category selector', 'shootcal-testimonials' ), checked: attributes.filter === 'show', __nextHasNoMarginBottom: true, onChange: function ( value ) { setAttributes( { filter: value ? 'show' : 'hide' } ); } } ),
 					createElement( ToggleControl, {
 						label: __( 'Allow a URL parameter to override these categories', 'shootcal-testimonials' ),
-						help: __( 'Lets ?sct_category=slug replace the ticked categories, so one page can serve two filtered URLs. The page must not be cached on its path alone.', 'shootcal-testimonials' ),
+						help: __( 'Lets ?shootcal_testimonials_category=slug replace the ticked categories, so one page can serve two filtered URLs. The page must not be cached on its path alone.', 'shootcal-testimonials' ),
 						checked: !! attributes.allowQuery,
 						__nextHasNoMarginBottom: true,
 						onChange: function ( value ) {

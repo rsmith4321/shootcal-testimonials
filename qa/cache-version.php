@@ -2,7 +2,7 @@
 use ShootCalTestimonials\Compatibility;
 use const ShootCalTestimonials\VERSION;
 if(!defined('WP_CLI')||!WP_CLI||!in_array(wp_parse_url(home_url(),PHP_URL_HOST),['localhost','shootcal-plugin-dev.local'],true))throw new RuntimeException('Local only');
-$key='sct_render_cache_version';$original=get_option($key,false);
+$key='shootcal_testimonials_render_cache_version';$original=get_option($key,false);
 try {
  update_option($key,'0.7.1',false);$c=new Compatibility;$flag=new ReflectionProperty(Compatibility::class,'purge_pending');
  $c->check_render_version();if(!$flag->getValue($c))throw new RuntimeException('Update did not schedule purge');

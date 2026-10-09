@@ -13,7 +13,7 @@
  * - No outbound request. A submission writes one post and a handful of meta rows. It
  *   never calls a review provider, which is the failure mode that saturated PHP-FPM on
  *   this host in August 2026.
- * - The submitter's email goes to `_sct_submitter_email` only. That key is never passed to
+ * - The submitter's email goes to `_shootcal_testimonials_submitter_email` only. That key is never passed to
  *   register_post_meta(), so it cannot be reached through the REST API. See Meta.
  * - Nothing is granted. No capability, no role, no user account. Post status is 'pending'
  *   in code and the author is whatever WordPress resolves for the current request, so
@@ -43,29 +43,29 @@ class Form {
 	/**
 	 * Nonce action and field.
 	 */
-	public const NONCE_ACTION = 'sct_form_submit';
-	public const NONCE_FIELD  = 'sct_form_nonce';
+	public const NONCE_ACTION = 'shootcal_testimonials_form_submit';
+	public const NONCE_FIELD  = 'shootcal_testimonials_form_nonce';
 
 	/**
 	 * Field names posted by the form.
 	 */
-	public const FIELD_NAME     = 'sct_name';
-	public const FIELD_QUOTE    = 'sct_quote';
-	public const FIELD_RATING   = 'sct_rating';
-	public const FIELD_CATEGORY = 'sct_form_category';
-	public const FIELD_EMAIL    = 'sct_email';
-	public const FIELD_REDIRECT = 'sct_redirect';
+	public const FIELD_NAME     = 'shootcal_testimonials_name';
+	public const FIELD_QUOTE    = 'shootcal_testimonials_quote';
+	public const FIELD_RATING   = 'shootcal_testimonials_rating';
+	public const FIELD_CATEGORY = 'shootcal_testimonials_form_category';
+	public const FIELD_EMAIL    = 'shootcal_testimonials_email';
+	public const FIELD_REDIRECT = 'shootcal_testimonials_redirect';
 
 	/**
 	 * Honeypot field. Rendered off-screen and labelled "leave this empty", so a person
 	 * never fills it and a bot that fills every input does.
 	 */
-	public const HONEYPOT_FIELD = 'sct_website';
+	public const HONEYPOT_FIELD = 'shootcal_testimonials_website';
 
 	/**
 	 * Query parameter carrying the one-time confirmation token.
 	 */
-	public const NOTICE_QUERY_VAR = 'sct_form';
+	public const NOTICE_QUERY_VAR = 'shootcal_testimonials_form';
 
 	/**
 	 * Query parameter that renders a dialog-mode form in place.
@@ -73,7 +73,7 @@ class Form {
 	 * The dialog trigger links here, so with script disabled the same click lands on the
 	 * form rendered inline instead of a dialog that would never open.
 	 */
-	public const OPEN_QUERY_VAR = 'sct_form_open';
+	public const OPEN_QUERY_VAR = 'shootcal_testimonials_form_open';
 
 	/**
 	 * Private meta key for the submitter's email.
@@ -82,7 +82,7 @@ class Form {
 	 * registered, so headless and mobile consumers reading post meta through the REST API
 	 * cannot see it. Do not register it.
 	 */
-	public const EMAIL_META_KEY = '_sct_submitter_email';
+	public const EMAIL_META_KEY = '_shootcal_testimonials_submitter_email';
 
 	/**
 	 * Seconds one address waits between accepted submissions.
@@ -390,7 +390,7 @@ class Form {
 		 * @param int    $post_id  Pending testimonial ID.
 		 * @param string $category Term slug, empty when none was chosen.
 		 */
-		do_action( 'sct_form_submitted', $post_id, $category );
+		do_action( 'shootcal_testimonials_form_submitted', $post_id, $category );
 
 		return $post_id;
 	}
@@ -398,7 +398,7 @@ class Form {
 	/**
 	 * Render the shortcode.
 	 *
-	 * Attributes: category preselects one sct_category slug, redirect sends the submitter
+	 * Attributes: category preselects one shootcal_testimonials_category slug, redirect sends the submitter
 	 * somewhere other than the form page after a successful post, mode chooses the form in
 	 * place (page) or a button that opens it in a dialog (dialog), and button_label names
 	 * that button.
@@ -882,7 +882,7 @@ class Form {
 	/** A 10-minute, IP-bound token: eight hex timestamp digits and a 96-bit MAC. */
 	private function honeypot_token( int $timestamp ): string {
 		$issued = sprintf( '%08x', $timestamp );
-		$mac    = hash_hmac( 'sha256', 'sct_honeypot:' . $issued . ':' . $this->client_ip(), wp_salt( 'nonce' ) );
+		$mac    = hash_hmac( 'sha256', 'shootcal_testimonials_honeypot:' . $issued . ':' . $this->client_ip(), wp_salt( 'nonce' ) );
 		return $issued . substr( $mac, 0, self::TOKEN_LENGTH - 8 );
 	}
 
@@ -917,7 +917,7 @@ class Form {
 	 * @param string $token Hex token from the query string.
 	 */
 	private function notice_key( string $token ): string {
-		return 'sct_form_notice_' . $token;
+		return 'shootcal_testimonials_form_notice_' . $token;
 	}
 
 	/**
@@ -928,7 +928,7 @@ class Form {
 	 * @param string $ip Validated remote address.
 	 */
 	private function cooldown_key( string $ip ): string {
-		return 'sct_form_ip_' . wp_hash( $ip );
+		return 'shootcal_testimonials_form_ip_' . wp_hash( $ip );
 	}
 
 	/**

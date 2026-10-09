@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       ShootCal Testimonials
  * Description:       Modern testimonials with native WordPress storage, clear review sources, and optional review structured data.
- * Version:           0.7.2
+ * Version:           0.8.0
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            ShootCal
@@ -20,16 +20,16 @@ namespace ShootCalTestimonials;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION    = '0.7.2';
+const VERSION    = '0.8.0';
 const SLUG       = 'shootcal-testimonials';
 const OPTION_KEY = 'shootcal_testimonials_options';
 
 /** Post type and taxonomy slugs. */
-const POST_TYPE = 'sct_testimonial';
-const TAXONOMY  = 'sct_category';
+const POST_TYPE = 'shootcal_testimonial';
+const TAXONOMY  = 'shootcal_testimonials_category';
 
 /** Meta prefix. Registered keys are exposed through the REST API; private keys are not registered at all. */
-const META_PREFIX = 'sct_';
+const META_PREFIX = 'shootcal_testimonials_';
 
 define( __NAMESPACE__ . '\\PLUGIN_FILE', __FILE__ );
 define( __NAMESPACE__ . '\\PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
@@ -60,6 +60,8 @@ spl_autoload_register(
  * Register the plugin's WordPress integrations.
  */
 function bootstrap(): void {
+	Storage_Upgrade::run();
+	Storage_Upgrade::legacy_query_aliases();
 	( new Post_Type() )->register();
 	( new Meta() )->register();
 	( new Category_Icons() )->register();
