@@ -4,7 +4,7 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.7.1
+Stable tag: 0.7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -134,6 +134,9 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 Sixty per server-rendered page. New installations show 21 initially; with View more enabled, the default first-page total is 60. Later pages are linked and loaded on scroll. Saved site and block settings are preserved. The ceiling is a page-weight guard rather than a library limit.
 
 == Changelog ==
+
+= 0.7.2 =
+* Refresh the pages displaying testimonials once after a plugin update so cached markup and styles do not linger.
 
 = 0.7.1 =
 * Align reviewer names with their category line, and align the Google source mark with the card text while retaining clear space around the mark.

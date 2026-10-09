@@ -17,6 +17,7 @@ declare( strict_types=1 );
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 delete_option( 'shootcal_testimonials_options' );
+delete_option( 'sct_render_cache_version' );
 
 if ( defined( 'SCT_REMOVE_CONTENT' ) && true === constant( 'SCT_REMOVE_CONTENT' ) ) {
 	$posts = get_posts(

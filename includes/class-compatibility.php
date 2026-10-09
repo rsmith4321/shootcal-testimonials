@@ -85,6 +85,7 @@ class Compatibility {
 		add_action( 'deleted_post_meta', array( $this, 'meta_changed' ), 10, 4 );
 		add_action( 'set_object_terms', array( $this, 'terms_changed' ), 10, 6 );
 		add_action( 'update_option_' . OPTION_KEY, array( $this, 'schedule_purge' ) );
+		add_action( 'init', array( $this, 'check_render_version' ), 20 );
 		add_action( 'shutdown', array( $this, 'flush_pending' ) );
 	}
 
@@ -221,6 +222,14 @@ class Compatibility {
 		if ( $post instanceof \WP_Post && POST_TYPE === $post->post_type && 'publish' === $post->post_status ) { $this->schedule_purge(); }
 	}
 	private bool $purge_pending = false;
+	private bool $version_pending = false;
+	/** Refresh rendered pages once after installation or a plugin update. */
+	public function check_render_version(): void {
+		if ( VERSION !== get_option( 'sct_render_cache_version', '' ) ) {
+			$this->version_pending = true;
+			$this->schedule_purge();
+		}
+	}
 	public function schedule_purge(): void { $this->purge_pending = true; }
 	public function meta_changed( $meta_id, $post_id, $key, $value ): void {
 		if ( POST_TYPE === get_post_type( $post_id ) && 'publish' === get_post_status( $post_id ) && ( 0 === strpos( (string) $key, META_PREFIX ) || '_thumbnail_id' === $key ) ) { $this->schedule_purge(); }
@@ -251,6 +260,10 @@ class Compatibility {
 			if ( function_exists( 'rocket_clean_post' ) ) { rocket_clean_post( $id ); }
 			do_action( 'litespeed_purge_post', $id );
 			self::clear_used_css( $id );
+		}
+		if ( $this->version_pending ) {
+			update_option( 'sct_render_cache_version', VERSION, false );
+			$this->version_pending = false;
 		}
 	}
 
