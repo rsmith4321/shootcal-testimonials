@@ -199,8 +199,31 @@ class Form {
 			return;
 		}
 
+		// Read first, so every refusal below puts the visitor's words back in the form.
+		$name     = $this->posted_text( self::FIELD_NAME );
+		$quote    = $this->posted_quote();
+		$email    = $this->posted_email();
+		$rating   = $this->posted_rating();
+		$category = $this->posted_category();
+
+		$this->old = array(
+			'name'     => $name,
+			'quote'    => $quote,
+			'email'    => $email,
+			'rating'   => $this->has_input( self::FIELD_RATING ) ? (string) absint( $this->posted_text( self::FIELD_RATING ) ) : '',
+			'category' => $category,
+		);
+
 		if ( ! wp_verify_nonce( sanitize_key( $this->posted_text( self::NONCE_FIELD ) ), self::NONCE_ACTION ) ) {
-			$this->errors['_form'] = __( 'Your session expired before the form was submitted. Please fill it in again.', 'shootcal-testimonials' );
+			/**
+			 * The message shown when a submission is refused before it is checked.
+			 *
+			 * @param string $message Default message.
+			 */
+			$this->errors['_form'] = (string) apply_filters(
+				'shootcal_testimonials_form_refused_message',
+				__( 'Your session expired before the form was submitted. Your words are still here, so please send it again.', 'shootcal-testimonials' )
+			);
 
 			return;
 		}
@@ -224,19 +247,6 @@ class Form {
 
 			return;
 		}
-
-		$name     = $this->posted_text( self::FIELD_NAME );
-		$quote    = $this->posted_quote();
-		$email    = $this->posted_email();
-		$rating   = $this->posted_rating();
-		$category = $this->posted_category();
-
-		$this->old = array(
-			'name'     => $name,
-			'quote'    => $quote,
-			'rating'   => $this->has_input( self::FIELD_RATING ) ? (string) absint( $this->posted_text( self::FIELD_RATING ) ) : '',
-			'category' => $category,
-		);
 
 		$this->validate( $name, $quote, $email, $rating, $category );
 
@@ -458,7 +468,8 @@ class Form {
 		$form .= $notice;
 		$form .= $errors;
 		$form .= sprintf(
-			'<form class="sct-form" method="post" aria-label="%s">',
+			'<form class="sct-form" method="post" action="#%s-errors" aria-label="%s">',
+			esc_attr( $this->id_base ),
 			esc_attr__( 'Submit a testimonial', 'shootcal-testimonials' )
 		);
 		$form .= wp_nonce_field( self::NONCE_ACTION, self::NONCE_FIELD, true, false );
@@ -686,11 +697,12 @@ class Form {
 			'email',
 			__( 'Email', 'shootcal-testimonials' ),
 			sprintf(
-				'<input type="email" id="%1$s" name="%2$s" value="" maxlength="%3$d" autocomplete="email"%4$s />',
+				'<input type="email" id="%1$s" name="%2$s" value="%5$s" maxlength="%3$d" autocomplete="email"%4$s />',
 				esc_attr( $this->id_base . '-email' ),
 				esc_attr( self::FIELD_EMAIL ),
 				self::EMAIL_MAX,
-				$this->control_attrs( 'email', true )
+				$this->control_attrs( 'email', true ),
+				esc_attr( (string) ( $this->old['email'] ?? '' ) )
 			),
 			__( 'Optional and never published. Only site editors can see your email, and it is used only if we need to check a detail with you.', 'shootcal-testimonials' ),
 			false
@@ -847,7 +859,8 @@ class Form {
 		}
 
 		return sprintf(
-			'<p class="sct-form__notice" role="status">%s</p>',
+			'<p class="sct-form__notice" id="%s-errors" role="status">%s</p>',
+			esc_attr( $this->id_base ),
 			esc_html( $message )
 		);
 	}
