@@ -4,7 +4,7 @@ Tags: testimonials,reviews,quotes,clients,google
 Requires at least: 6.4
 Requires PHP: 8.0
 Tested up to: 7.1
-Stable tag: 0.8.0
+Stable tag: 0.8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -134,6 +134,10 @@ ShootCal Testimonials registers its own exclusions with those four automatically
 Sixty per server-rendered page. New installations show 21 initially; with View more enabled, the default first-page total is 60. Later pages are linked and loaded on scroll. Saved site and block settings are preserved. The ceiling is a page-weight guard rather than a library limit.
 
 == Changelog ==
+
+= 0.8.1 =
+* Later pages of a long review list now name their own address as canonical, so search engines can read those reviews. Works with Rank Math, The SEO Framework and plain WordPress.
+* Old ?ttpage=N addresses on a page with reviews redirect to that page.
 
 = 0.8.0 =
 * Use distinctive ShootCal identifiers, with an automatic, transactional upgrade that preserves review IDs, quotes, metadata, photos and category relationships.

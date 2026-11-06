@@ -349,6 +349,36 @@ class Shortcode {
 		return new \WP_Query( $args );
 	}
 
+	/**
+	 * Whether a list with these attributes really has this page, using the same query it renders with.
+	 *
+	 * @param array<string,mixed> $atts Shortcode attributes.
+	 */
+	public function has_page( array $atts, int $page ): bool {
+		$atts = shortcode_atts(
+			array(
+				'category'    => '',
+				'allow_query' => 'off',
+				'filter'      => 'hide',
+				'count'       => (string) Config::get( 'default_count' ),
+				'total'       => '',
+				'more'        => (string) Config::get( 'default_more' ),
+				'orderby'     => 'date',
+				'order'       => 'DESC',
+			),
+			$atts,
+			'shootcal_testimonials'
+		);
+		if ( 'show' !== $atts['more'] ) {
+			return false;
+		}
+		$count     = max( 1, min( self::CEILING, (int) $atts['count'] ) );
+		$requested = '' !== trim( (string) $atts['total'] ) ? (int) $atts['total'] : self::DEFAULT_TOTAL;
+		$total     = min( self::CEILING, max( $count + 1, $requested ) );
+		$query     = $this->query( $this->resolve_category( (string) $atts['category'], 'off' ), $total, (string) $atts['orderby'], (string) $atts['order'], $page, true );
+		return array() !== $query->posts;
+	}
+
 	/** Page navigation is bounded to prevent an untrusted huge SQL offset. */
 	private function review_page(): int {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only public pagination.
